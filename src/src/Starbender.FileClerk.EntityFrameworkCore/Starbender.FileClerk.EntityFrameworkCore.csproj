@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="10.5.0" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain\Starbender.FileClerk.Domain.csproj" />
   </ItemGroup>
 
