@@ -11,7 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Starbender.FileClerk.Application\Starbender.FileClerk.Application.csproj" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain.Tests\Starbender.FileClerk.Domain.Tests.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
   </ItemGroup>
 
 </Project>
