@@ -1,0 +1,28 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+
+    <Folder Name="/src/">
+        <Project Path="src/Starbender.FileClerk.Domain.Shared/Starbender.FileClerk.Domain.Shared.csproj" />
+        <Project Path="src/Starbender.FileClerk.Domain/Starbender.FileClerk.Domain.csproj" />
+        <Project Path="src/Starbender.FileClerk.Application.Contracts/Starbender.FileClerk.Application.Contracts.csproj" />
+        <Project Path="src/Starbender.FileClerk.Application/Starbender.FileClerk.Application.csproj" />
+        <Project Path="src/Starbender.FileClerk.EntityFrameworkCore/Starbender.FileClerk.EntityFrameworkCore.csproj" />
+        <Project Path="src/Starbender.FileClerk.HttpApi/Starbender.FileClerk.HttpApi.csproj" />
+        <Project Path="src/Starbender.FileClerk.HttpApi.Client/Starbender.FileClerk.HttpApi.Client.csproj" />
+        <Project Path="src/Starbender.FileClerk.Web/Starbender.FileClerk.Web.csproj" />
+        <Project Path="src/Starbender.FileClerk.Blazor/Starbender.FileClerk.Blazor.csproj" />
+        <Project Path="src/Starbender.FileClerk.Blazor.Server/Starbender.FileClerk.Blazor.Server.csproj" />
+        <Project Path="src/Starbender.FileClerk.Blazor.WebAssembly/Starbender.FileClerk.Blazor.WebAssembly.csproj" />
+        <Project Path="src/Starbender.FileClerk.Blazor.WebAssembly.Bundling/Starbender.FileClerk.Blazor.WebAssembly.Bundling.csproj" />
+        <Project Path="src/Starbender.FileClerk.Installer/Starbender.FileClerk.Installer.csproj" />
+    </Folder>
+    
+    <Folder Name="/test/">
+        <Project Path="test/Starbender.FileClerk.TestBase/Starbender.FileClerk.TestBase.csproj" />
+        <Project Path="test/Starbender.FileClerk.EntityFrameworkCore.Tests/Starbender.FileClerk.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Domain.Tests/Starbender.FileClerk.Domain.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Application.Tests/Starbender.FileClerk.Application.Tests.csproj" />
+    </Folder>
+</Solution>
