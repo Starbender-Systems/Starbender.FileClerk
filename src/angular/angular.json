@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "analytics": false
+  },
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "dev-app": {
+      "projectType": "application",
+      "root": "projects/dev-app",
+      "sourceRoot": "projects/dev-app/src"
+    },
+    "file-clerk": {
+      "projectType": "library",
+      "root": "projects/file-clerk",
+      "sourceRoot": "projects/file-clerk/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/file-clerk/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/file-clerk/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/file-clerk/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/file-clerk/tsconfig.spec.json",
+            "buildTarget": "projects/file-clerk:build",
+            "runner": "vitest"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/file-clerk/**/*.ts",
+              "projects/file-clerk/**/*.html"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
