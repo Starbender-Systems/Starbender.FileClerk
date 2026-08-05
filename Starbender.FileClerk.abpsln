@@ -1,0 +1,9 @@
+{
+  "id": "b35ff746-953f-4af2-9067-6d5bec144f3d",
+  "template": "empty",
+  "modules": {
+    "Starbender.FileClerk": {
+      "path": "src/Starbender.FileClerk.abpmdl"
+    }
+  }
+}
