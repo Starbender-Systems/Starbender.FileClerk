@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.prod.json",
+  "compilerOptions": {
+    "paths": {
+      "@starbender/file-clerk": ["projects/file-clerk/src/public-api.ts"],
+      "@starbender/file-clerk/config": [
+        "projects/file-clerk/config/src/public-api.ts"
+      ]
+    }
+  }
+}
