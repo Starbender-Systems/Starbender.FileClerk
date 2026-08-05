@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.9" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
     <ProjectReference Include="..\..\src\Starbender.FileClerk.EntityFrameworkCore\Starbender.FileClerk.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Starbender.FileClerk.Application.Tests\Starbender.FileClerk.Application.Tests.csproj" />
-    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="10.5.0"/>
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" />
   </ItemGroup>
 
 </Project>

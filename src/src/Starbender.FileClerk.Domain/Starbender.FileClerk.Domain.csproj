@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="10.5.0"/>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain.Shared\Starbender.FileClerk.Domain.Shared.csproj" />
   </ItemGroup>
 
