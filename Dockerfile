@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0.100-noble AS dotnet-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.302-noble AS dotnet-build
 
 WORKDIR /workspace
 
