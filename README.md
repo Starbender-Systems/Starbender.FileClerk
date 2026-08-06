@@ -22,7 +22,7 @@ is the top-level feature roadmap.
 
 | Component | Version |
 | --- | --- |
-| .NET SDK | 10.0.100 or a later 10.0 patch |
+| .NET SDK | 10.0.300 or a later 10.0.3xx patch |
 | ABP Framework | 10.5.0 |
 | Angular | 21.2.x |
 | Node.js | 22.13.0 |
