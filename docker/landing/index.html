@@ -6,38 +6,39 @@
   <meta name="description" content="FileClerk ABP module demo applications">
   <title>FileClerk demos</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="/demo-config.js"></script>
 </head>
 <body>
   <main>
     <p class="eyebrow">Starbender Systems</p>
     <h1>FileClerk demos</h1>
     <p class="intro">
-      FileClerk is an ABP Framework module for managing BLOB storage containers
-      and provider configuration. Its demo applications are under development.
+      Four ABP Basic Theme applications exercise the same FileClerk backend and
+      PostgreSQL data. Sign in to any application with <strong>admin / 1q2w3E*</strong>.
     </p>
 
     <section aria-labelledby="demo-heading">
-      <h2 id="demo-heading">Planned user interfaces</h2>
+      <h2 id="demo-heading">Choose a user interface</h2>
       <div class="demo-grid">
         <article>
-          <h3>MVC / Razor Pages</h3>
-          <p>Reserved at port 8081.</p>
-          <span class="status">Coming soon</span>
+          <h3>Blazor WebApp</h3>
+          <p>Server rendering with an interactive WebAssembly client.</p>
+          <a data-demo="webapp" href="#">Open Blazor WebApp</a>
         </article>
         <article>
           <h3>Blazor Server</h3>
-          <p>Reserved at port 8082.</p>
-          <span class="status">Coming soon</span>
+          <p>Interactive server rendering over a WebSocket connection.</p>
+          <a data-demo="server" href="#">Open Blazor Server</a>
         </article>
         <article>
           <h3>Blazor WebAssembly</h3>
-          <p>Reserved at port 8083.</p>
-          <span class="status">Coming soon</span>
+          <p>Browser-hosted UI with a same-origin API and authentication proxy.</p>
+          <a data-demo="wasm" href="#">Open Blazor WebAssembly</a>
         </article>
         <article>
           <h3>Angular</h3>
-          <p>Reserved at port 8084.</p>
-          <span class="status">Coming soon</span>
+          <p>Angular 22.1 UI with the local FileClerk package wired by source path.</p>
+          <a data-demo="angular" href="#">Open Angular</a>
         </article>
       </div>
     </section>
@@ -46,5 +47,13 @@
       <a href="https://github.com/Starbender-Systems/Starbender.FileClerk">View the repository</a>
     </footer>
   </main>
+  <script>
+    const ports = window.fileClerkDemoPorts || {
+      webapp: '8081', server: '8082', wasm: '8083', angular: '8084'
+    };
+    document.querySelectorAll('[data-demo]').forEach(link => {
+      link.href = `${window.location.protocol}//${window.location.hostname}:${ports[link.dataset.demo]}`;
+    });
+  </script>
 </body>
 </html>

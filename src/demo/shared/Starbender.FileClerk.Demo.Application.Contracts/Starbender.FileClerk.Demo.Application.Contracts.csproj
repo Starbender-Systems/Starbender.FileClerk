@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Starbender.FileClerk.Demo</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Starbender.FileClerk.Demo.Domain.Shared\Starbender.FileClerk.Demo.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\Starbender.FileClerk.Application.Contracts\Starbender.FileClerk.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application.Contracts" Version="10.6.0" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application.Contracts" Version="10.6.0" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="10.6.0" />
+    <PackageReference Include="Volo.Abp.Identity.Application.Contracts" Version="10.6.0" />
+    <PackageReference Include="Volo.Abp.Account.Application.Contracts" Version="10.6.0" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application.Contracts" Version="10.6.0" />
+  </ItemGroup>
+
+</Project>

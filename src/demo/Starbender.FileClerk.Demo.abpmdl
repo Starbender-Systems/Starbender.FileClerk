@@ -1,0 +1,118 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.BasicTheme": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    },
+    "Volo.Abp.BlobStoring.Database": {
+      "version": "10.6.0",
+      "isInstalled": true,
+      "creationTime": "08/06/2026 20:46:33 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "Starbender.FileClerk.Demo.Application": {
+      "path": "src/Starbender.FileClerk.Demo.Application/Starbender.FileClerk.Demo.Application.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.Application.Tests": {
+      "path": "test/Starbender.FileClerk.Demo.Application.Tests/Starbender.FileClerk.Demo.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "Starbender.FileClerk.Demo.Domain.Shared": {
+      "path": "src/Starbender.FileClerk.Demo.Domain.Shared/Starbender.FileClerk.Demo.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.Application.Contracts": {
+      "path": "src/Starbender.FileClerk.Demo.Application.Contracts/Starbender.FileClerk.Demo.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.HttpApi": {
+      "path": "src/Starbender.FileClerk.Demo.HttpApi/Starbender.FileClerk.Demo.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.HttpApi.Client": {
+      "path": "src/Starbender.FileClerk.Demo.HttpApi.Client/Starbender.FileClerk.Demo.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.EntityFrameworkCore.Tests": {
+      "path": "test/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "Starbender.FileClerk.Demo.EntityFrameworkCore": {
+      "path": "src/Starbender.FileClerk.Demo.EntityFrameworkCore/Starbender.FileClerk.Demo.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.TestBase": {
+      "path": "test/Starbender.FileClerk.Demo.TestBase/Starbender.FileClerk.Demo.TestBase.abppkg",
+      "folder": "test"
+    },
+    "Starbender.FileClerk.Demo.Domain.Tests": {
+      "path": "test/Starbender.FileClerk.Demo.Domain.Tests/Starbender.FileClerk.Demo.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "Starbender.FileClerk.Demo.DbMigrator": {
+      "path": "src/Starbender.FileClerk.Demo.DbMigrator/Starbender.FileClerk.Demo.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.Blazor": {
+      "path": "src/Starbender.FileClerk.Demo.Blazor/Starbender.FileClerk.Demo.Blazor.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.Blazor.Client": {
+      "path": "src/Starbender.FileClerk.Demo.Blazor.Client/Starbender.FileClerk.Demo.Blazor.Client.abppkg",
+      "folder": "src"
+    },
+    "Starbender.FileClerk.Demo.Domain": {
+      "path": "src/Starbender.FileClerk.Demo.Domain/Starbender.FileClerk.Demo.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

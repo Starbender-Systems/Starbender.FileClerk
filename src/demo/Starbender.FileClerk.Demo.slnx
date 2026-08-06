@@ -1,0 +1,30 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/shared/">
+        <Project Path="shared/Starbender.FileClerk.Demo.Domain/Starbender.FileClerk.Demo.Domain.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.Application/Starbender.FileClerk.Demo.Application.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.EntityFrameworkCore/Starbender.FileClerk.Demo.EntityFrameworkCore.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.Domain.Shared/Starbender.FileClerk.Demo.Domain.Shared.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.Application.Contracts/Starbender.FileClerk.Demo.Application.Contracts.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.HttpApi/Starbender.FileClerk.Demo.HttpApi.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.HttpApi.Client/Starbender.FileClerk.Demo.HttpApi.Client.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.HttpApi.Host/Starbender.FileClerk.Demo.HttpApi.Host.csproj" />
+        <Project Path="shared/Starbender.FileClerk.Demo.DbMigrator/Starbender.FileClerk.Demo.DbMigrator.csproj" />
+    </Folder>
+    <Folder Name="/ui/">
+        <Project Path="blazor-server/Starbender.FileClerk.Demo.BlazorServer/Starbender.FileClerk.Demo.BlazorServer.Blazor.csproj" />
+        <Project Path="blazor-webapp/Starbender.FileClerk.Demo.Blazor/Starbender.FileClerk.Demo.Blazor.csproj" />
+        <Project Path="blazor-webapp/Starbender.FileClerk.Demo.Blazor.Client/Starbender.FileClerk.Demo.Blazor.Client.csproj" />
+        <Project Path="blazor-webassembly/Starbender.FileClerk.Demo.BlazorWebAssembly/Starbender.FileClerk.Demo.BlazorWebAssembly.Blazor.csproj" />
+        <Project Path="blazor-webassembly/Starbender.FileClerk.Demo.BlazorWebAssembly.Client/Starbender.FileClerk.Demo.BlazorWebAssembly.Blazor.Client.csproj" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/Starbender.FileClerk.Demo.Application.Tests/Starbender.FileClerk.Demo.Application.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Demo.TestBase/Starbender.FileClerk.Demo.TestBase.csproj" />
+        <Project Path="test/Starbender.FileClerk.Demo.Domain.Tests/Starbender.FileClerk.Demo.Domain.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp.csproj" />
+    </Folder>
+</Solution>
