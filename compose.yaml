@@ -1,0 +1,57 @@
+name: fileclerk
+
+services:
+  postgres:
+    image: postgres:18.4-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fileclerk}
+      POSTGRES_USER: ${POSTGRES_USER:-fileclerk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fileclerk_dev_only}
+    ports:
+      - "${DATABASE_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready --username "$${POSTGRES_USER}" --dbname "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  app:
+    image: starbender-fileclerk-app:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-fileclerk};Username=${POSTGRES_USER:-fileclerk};Password=${POSTGRES_PASSWORD:-fileclerk_dev_only}"
+      ConnectionStrings__FileClerk: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-fileclerk};Username=${POSTGRES_USER:-fileclerk};Password=${POSTGRES_PASSWORD:-fileclerk_dev_only}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${LANDING_PORT:-8080}:8080"
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${MVC_PORT:-8081}:8081"
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${BLAZOR_SERVER_PORT:-8082}:8082"
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${BLAZOR_WASM_PORT:-8083}:8083"
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${ANGULAR_PORT:-8084}:8084"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - --fail
+        - --silent
+        - --show-error
+        - http://localhost:8080/health
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  postgres_data:

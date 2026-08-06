@@ -222,6 +222,11 @@ publish/
 # in these scripts will be unencrypted
 PublishScripts/
 
+# Local Docker Compose overrides and credentials
+.env
+.env.*
+!.env.example
+
 # NuGet Packages
 *.nupkg
 # NuGet Symbol Packages
