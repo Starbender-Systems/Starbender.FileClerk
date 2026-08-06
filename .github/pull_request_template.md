@@ -6,6 +6,11 @@ Describe what changed and why it is needed.
 
 Describe the user, developer, compatibility, or security impact.
 
+## Version impact
+
+The default is the next fix version. If needed, put `+semver: minor` or
+`+semver: major` in the final squash commit message and explain why here.
+
 ## Validation
 
 - [ ] I built the relevant projects locally
@@ -15,7 +20,7 @@ Describe the user, developer, compatibility, or security impact.
 
 ## Checklist
 
-- [ ] This change is focused and targets `main`
+- [ ] This change is focused and targets `development`, or it is a release promotion targeting `main`
 - [ ] Related issues are linked when applicable
 - [ ] No secrets, private configuration, or non-redistributable content is included
 - [ ] New or updated dependencies are necessary and license-compatible

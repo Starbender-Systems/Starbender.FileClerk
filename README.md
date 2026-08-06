@@ -51,6 +51,61 @@ npm run lint
 npm run build
 ```
 
+## NuGet packages and versions
+
+The 13 projects under `src/src` are packaged together and always use the same
+version. Test projects are not packable. Package metadata, the repository
+README, and `src/src/Nuget.png` are added centrally to every package.
+
+Restore the pinned GitVersion tool and inspect the current release line with:
+
+```bash
+dotnet tool restore
+dotnet gitversion /showvariable MajorMinorPatch
+```
+
+For a local package build, choose a valid prerelease version and run:
+
+```bash
+dotnet restore src/Starbender.FileClerk.slnx
+dotnet build src/Starbender.FileClerk.slnx --configuration Release --no-restore \
+  -p:Version=0.1.0-prerelease-local -p:PackageVersion=0.1.0-prerelease-local
+dotnet pack src/Starbender.FileClerk.slnx --configuration Release \
+  --no-build --no-restore \
+  -p:Version=0.1.0-prerelease-local \
+  -p:PackageVersion=0.1.0-prerelease-local \
+  -p:PackageOutputPath=artifacts/nuget
+./scripts/validate-nuget-packages.sh artifacts/nuget 0.1.0-prerelease-local
+```
+
+CI uses the GitVersion `MajorMinorPatch` value as the base. Pull requests and
+untagged `main` builds produce `-ci-<run-number>` artifacts. Pushes to
+`development` produce downloadable `-prerelease-<run-number>` artifacts and
+never receive NuGet.org credentials. Stable packages are published only for an
+exact `vMajor.Minor.Fix` tag whose commit is reachable from `main`.
+
+After the first stable release, packages can be installed from NuGet.org, for
+example:
+
+```bash
+dotnet add package Starbender.FileClerk.Domain.Shared --version 0.1.0
+```
+
+The release workflow is:
+
+1. Merge normal changes into `development`.
+2. Promote `development` to `main` with a release pull request.
+3. Tag the selected `main` commit as `vMajor.Minor.Fix` and push the tag.
+4. Verify all 13 package pages and their metadata on NuGet.org.
+
+An ordinary squash merge advances the fix version. Put `+semver: minor` or
+`+semver: major` in the squash commit message when that larger increment is
+intentional; `+semver: fix` is also supported. The NuGet.org API key is stored
+as the organization-level `NUGET_API_KEY` Actions secret and must grant this
+repository access. The `nuget.org` environment restricts its use to release-tag
+jobs. The key must be scoped to `Starbender.FileClerk.*` packages and rotated
+before expiry.
+
 ## Demo containers
 
 The repository includes an immutable Docker Compose environment with two
@@ -133,13 +188,15 @@ run competing migrations.
 | `src/test/` | Shared, domain, application, and EF Core tests |
 | `src/angular/` | Angular library workspace |
 | `src/Directory.Packages.props` | Centrally managed NuGet versions |
+| `GitVersion.yml` | Release-line and semantic-version increment rules |
 | `docker/` | Landing page and Linux application-server configuration |
 
 ## Contributing
 
 Contributions are welcome. Read the
 [contribution guide](.github/CONTRIBUTING.md), use the issue templates, and open
-a pull request into `main`. All changes must pass the required CI checks.
+a pull request into `development`. Release promotion pull requests target
+`main`. All changes must pass the required CI checks.
 
 ## Security
 

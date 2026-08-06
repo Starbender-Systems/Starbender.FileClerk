@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Authors>Starbender Systems</Authors>
+    <Company>Starbender Systems</Company>
+    <Description>$(MSBuildProjectName) package for the FileClerk ABP module.</Description>
+    <PackageTags>FileClerk;ABP;BLOB;storage</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/Starbender-Systems/Starbender.FileClerk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Starbender-Systems/Starbender.FileClerk.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>Nuget.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Nuget.png" Pack="true" PackagePath="" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\..\README.md" Pack="true" PackagePath="" Link="README.md" Visible="false" />
+  </ItemGroup>
+</Project>
