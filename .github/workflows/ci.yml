@@ -64,6 +64,74 @@ jobs:
       - name: Build
         run: npm run build
 
+  container:
+    name: Container stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate Compose configuration
+        run: |
+          docker compose config --quiet
+          POSTGRES_DB=fileclerk_override \
+          POSTGRES_USER=fileclerk_override \
+          POSTGRES_PASSWORD=fileclerk_override_only \
+          POSTGRES_PORT=55432 \
+          LANDING_PORT=18080 \
+          docker compose config --format json |
+            jq --exit-status '
+              .services.postgres.ports[0].published == "55432" and
+              .services.app.ports[0].published == "18080" and
+              .services.postgres.environment.POSTGRES_DB == "fileclerk_override" and
+              .services.postgres.environment.POSTGRES_USER == "fileclerk_override" and
+              .services.postgres.environment.POSTGRES_PASSWORD == "fileclerk_override_only" and
+              (.services.app.environment.ConnectionStrings__FileClerk |
+                contains("Database=fileclerk_override;Username=fileclerk_override;Password=fileclerk_override_only"))
+            '
+
+      - name: Build application image
+        run: docker compose build app
+
+      - name: Start container stack
+        run: docker compose up --detach --wait --wait-timeout 180
+
+      - name: Verify services
+        run: |
+          test "$(
+            docker compose exec --no-TTY postgres sh -ec \
+              'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT 1"'
+          )" = "1"
+          curl --fail --silent --show-error http://localhost:8080/health
+          curl --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
+          docker compose exec --no-TTY app sh -ec '
+            test "$(id -u)" -ne 0
+            test -f /opt/fileclerk/build-info/dotnet-build-complete
+            test -f /opt/fileclerk/build-info/angular-build-complete
+            test ! -e /workspace
+            test ! -e /app/node_modules
+            test ! -e /root/.nuget
+          '
+
+      - name: Verify database persistence
+        run: |
+          docker compose exec --no-TTY postgres sh -ec '
+            psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 \
+              --command "CREATE TABLE container_smoke_test (id integer PRIMARY KEY)" \
+              --command "INSERT INTO container_smoke_test VALUES (1)"
+          '
+          docker compose restart postgres
+          docker compose up --detach --wait --wait-timeout 120
+          test "$(
+            docker compose exec --no-TTY postgres sh -ec \
+              'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT id FROM container_smoke_test"'
+          )" = "1"
+
+      - name: Clean up container stack
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
   dependency-review:
     name: Dependency review
     if: github.event_name == 'pull_request'
