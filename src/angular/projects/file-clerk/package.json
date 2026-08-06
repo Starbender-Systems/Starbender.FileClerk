@@ -6,7 +6,6 @@
     "@abp/ng.oauth": "~10.5.0",
     "@abp/ng.theme.shared": "~10.5.0",
     "@abp/ng.components":"~10.5.0",
-    "@volo/abp.commercial.ng.ui": "~10.5.0",
     "tslib": "^2.1.0"
   }
 }

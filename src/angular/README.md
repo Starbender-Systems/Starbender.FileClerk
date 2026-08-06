@@ -4,15 +4,15 @@ This is an Angular library for the ABP module. It provides UI components and ser
 
 ## Pre-requirements
 
-* [Node.js v18 or later](https://nodejs.org/)
-* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+* [Node.js 22.13.0](https://nodejs.org/), as pinned by the repository `.nvmrc`
+* [npm](https://www.npmjs.com/)
 
 ## Getting Started
 
 ### Install dependencies
 
 ```bash
-npm install
+npm ci
 ```
 
 ## Development
@@ -39,7 +39,7 @@ Run `ng generate component component-name --project file-clerk` to generate a ne
 
 ## Running unit tests
 
-Run `ng test file-clerk` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `npm test -- --watch=false` to execute the unit tests with Vitest.
 
 ## Publishing
 
