@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="ConfigureAwait.Fody" Version="3.3.1" />
-    <PackageVersion Include="Fody" Version="6.5.3" />
+    <PackageVersion Include="ConfigureAwait.Fody" Version="3.4.1" />
+    <PackageVersion Include="Fody" Version="6.9.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="$(MicrosoftNetVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(MicrosoftNetVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftNetVersion)" />
