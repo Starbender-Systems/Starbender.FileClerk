@@ -8,7 +8,6 @@
     "@abp/ng.core",
     "@abp/ng.oauth",
     "@abp/ng.theme.shared",
-    "@abp/ng.components",
-    "@volo/abp.commercial.ng.ui"
+    "@abp/ng.components"
   ]
 }
