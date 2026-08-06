@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
 using Volo.Abp.Application;
+using Volo.Abp.BlobStoring;
 
 namespace Starbender.FileClerk;
 
@@ -11,7 +12,8 @@ namespace Starbender.FileClerk;
     typeof(AbpDddApplicationModule),
     typeof(AbpMapperlyModule)
     )]
-public class FileClerkApplicationModule : AbpModule
+[DependsOn(typeof(AbpBlobStoringModule))]
+    public class FileClerkApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
