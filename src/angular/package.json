@@ -1,5 +1,5 @@
 {
-  "name": "FileClerk",
+  "name": "starbender-file-clerk-workspace",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -9,12 +9,14 @@
     "e2e": "ng e2e"
   },
   "private": true,
+  "engines": {
+    "node": ">=22.13.0 <23"
+  },
   "dependencies": {
     "@abp/ng.core": "~10.5.0",
     "@abp/ng.oauth": "~10.5.0",
     "@abp/ng.theme.shared": "~10.5.0",
     "@abp/ng.components": "~10.5.0",
-    "@volo/abp.commercial.ng.ui": "~10.5.0",
     "@angular/animations": "~21.2.0",
     "@angular/aria": "~21.2.0",
     "@angular/common": "~21.2.0",
