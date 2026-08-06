@@ -12,7 +12,7 @@ RUN dotnet restore src/Starbender.FileClerk.slnx \
     && touch /tmp/dotnet-build-complete
 
 
-FROM node:22.13.0-bookworm-slim AS angular-build
+FROM node:26.5.1-bookworm-slim AS angular-build
 
 WORKDIR /workspace/src/angular
 
