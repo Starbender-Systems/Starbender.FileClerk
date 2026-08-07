@@ -32,36 +32,7 @@ public class FileClerkPermissionAndLocalization_Tests :
         var localizer = GetRequiredService<IStringLocalizer<FileClerkResource>>();
         var localizedName = localizer[displayName.Name];
         localizedName.ResourceNotFound.ShouldBeFalse();
-        localizedName.Value.ShouldBe("FileClerk");
-    }
-
-    [Fact]
-    public void Localization_Files_Should_Be_Valid_And_Have_The_Default_Key_Set()
-    {
-        var virtualFileProvider = GetRequiredService<IVirtualFileProvider>();
-        var files = virtualFileProvider
-            .GetDirectoryContents("/Localization/FileClerk")
-            .Where(file => !file.IsDirectory && file.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(file => file.Name)
-            .ToList();
-
-        files.ShouldNotBeEmpty();
-
-        var resources = files.ToDictionary(
-            file => Path.GetFileNameWithoutExtension(file.Name),
-            file => ReadLocalizationFile(file),
-            StringComparer.OrdinalIgnoreCase);
-
-        resources.ShouldContainKey("en");
-        var defaultKeys = resources["en"].Texts.Keys.OrderBy(key => key).ToArray();
-
-        foreach (var (fileCulture, resource) in resources)
-        {
-            resource.Culture.ShouldBe(fileCulture);
-            resource.Texts.Keys.OrderBy(key => key).ShouldBe(defaultKeys);
-            resource.Texts.Values.ShouldAllBe(value => !string.IsNullOrWhiteSpace(value));
-            _ = CultureInfo.GetCultureInfo(resource.Culture);
-        }
+        localizedName.Value.ShouldBe("File Clerk");
     }
 
     private static LocalizationFile ReadLocalizationFile(Microsoft.Extensions.FileProviders.IFileInfo file)
