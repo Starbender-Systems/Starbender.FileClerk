@@ -227,7 +227,8 @@ jobs:
         run: |
           cookie_jar="$(mktemp)"
           email_settings_response="$(mktemp)"
-          trap 'rm --force "$cookie_jar" "$email_settings_response"' EXIT
+          global_script_response="$(mktemp)"
+          trap 'rm --force "$cookie_jar" "$email_settings_response" "$global_script_response"' EXIT
 
           login_html="$(
             curl --fail --silent --show-error \
@@ -255,17 +256,31 @@ jobs:
               http://localhost:8085/Account/Login
           )" = "302"
 
-          manage_html="$(
+          settings_html="$(
             curl --fail --silent --show-error \
               --cookie "$cookie_jar" \
-              --cookie-jar "$cookie_jar" \
-              http://localhost:8085/Account/Manage
+              http://localhost:8085/SettingManagement
           )"
+          global_script_path="$(
+            printf '%s' "$settings_html" |
+              grep --only-matching '/__bundles/Basic\.Global\.[^"]*\.js[^" ]*' |
+              head --lines=1
+          )"
+          test -n "$global_script_path"
+          curl --fail --silent --show-error \
+            --output "$global_script_response" \
+            "http://localhost:8085$global_script_path"
+          grep --quiet 'XSRF-TOKEN-MVC-v1' "$global_script_response"
+
+          curl --fail --silent --show-error \
+            --cookie "$cookie_jar" \
+            --cookie "XSRF-TOKEN=stale-token-from-another-demo" \
+            --cookie-jar "$cookie_jar" \
+            --output /dev/null \
+            http://localhost:8085/Abp/ApplicationConfigurationScript
           request_token="$(
-            printf '%s' "$manage_html" |
-              grep --only-matching 'name="__RequestVerificationToken" type="hidden" value="[^"]*"' |
-              head --lines=1 |
-              cut --delimiter='"' --fields=6
+            awk '$6 == "XSRF-TOKEN-MVC-v1" { print $7 }' "$cookie_jar" |
+              tail --lines=1
           )"
           test -n "$request_token"
 
@@ -276,6 +291,7 @@ jobs:
 
           curl --fail --silent --show-error \
             --cookie "$cookie_jar" \
+            --cookie "XSRF-TOKEN=stale-token-from-another-demo" \
             --header "RequestVerificationToken: $request_token" \
             --data-urlencode "id=Volo.Abp.EmailSetting" \
             --output "$email_settings_response" \

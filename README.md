@@ -138,7 +138,9 @@ against separate instances of the shared HTTP API host so each authority stays
 same-origin. Both `Default` and `FileClerk` remote services and connection
 strings resolve to the shared backend. ASP.NET Data Protection keys are stored
 in a separate Docker volume so login sessions and antiforgery tokens remain
-valid when the application container is rebuilt or recreated.
+valid when the application container is rebuilt or recreated. The MVC host
+also uses its own antiforgery cookie name because browser cookies are scoped by
+hostname rather than by the different localhost ports used by the demos.
 
 ### Configuration
 

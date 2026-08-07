@@ -20,6 +20,7 @@ using Starbender.FileClerk.Web;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.AspNetCore.Mvc.AntiForgery;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
@@ -141,6 +142,7 @@ public class DemoWebModule : AbpModule
 
         ConfigureStudio(hostingEnvironment);
         ConfigureAuthentication(context);
+        ConfigureAntiForgery();
         ConfigureUrls(configuration);
         ConfigureBundles(hostingEnvironment);
         ConfigureVirtualFileSystem(hostingEnvironment);
@@ -166,6 +168,16 @@ public class DemoWebModule : AbpModule
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
+        });
+    }
+
+    private void ConfigureAntiForgery()
+    {
+        Configure<AbpAntiForgeryOptions>(options =>
+        {
+            // Cookies are scoped by hostname, not port. Keep MVC's token isolated from
+            // stale tokens and tokens issued by the other localhost demo applications.
+            options.TokenCookie.Name = "XSRF-TOKEN-MVC-v1";
         });
     }
 
