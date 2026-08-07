@@ -109,6 +109,7 @@ jobs:
               .services.postgres.environment.POSTGRES_USER == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_PASSWORD == "fileclerk_override_only" and
               .services.app.environment.DEMO_PUBLIC_HOST == "fileclerk.example.test" and
+              .services.app.environment.LANDING_PORT == "18080" and
               .services.app.environment.BLAZOR_WEBAPP_PORT == "18081" and
               .services.app.environment.BLAZOR_SERVER_PORT == "18082" and
               .services.app.environment.BLAZOR_WASM_PORT == "18083" and
@@ -125,6 +126,50 @@ jobs:
 
       - name: Verify services
         run: |
+          verify_blazor_bundle() {
+            base_url="$1"
+            bundle_path="$(
+              curl --fail --silent --show-error "$base_url/" |
+                grep --only-matching '/__bundles/[^"]*\.css' |
+                head --lines=1
+            )"
+            test -n "$bundle_path"
+            curl --fail --silent --show-error "$base_url$bundle_path" >/dev/null
+          }
+
+          verify_account_page_assets() {
+            base_url="$1"
+            login_html="$(curl --fail --silent --show-error "$base_url/Account/Login")"
+
+            while IFS= read -r asset_path; do
+              case "$asset_path" in
+                //*) continue ;;
+                *.css*) expected_type="text/css" ;;
+                *.js*) expected_type="javascript" ;;
+                *.svg*) expected_type="image/svg+xml" ;;
+                *) continue ;;
+              esac
+
+              actual_type="$(
+                curl --fail --location --silent --show-error \
+                  --output /dev/null --write-out '%{content_type}' \
+                  "$base_url$asset_path"
+              )"
+              case "$actual_type" in
+                *"$expected_type"*) ;;
+                *)
+                  echo "Unexpected content type for $base_url$asset_path: $actual_type" >&2
+                  return 1
+                  ;;
+              esac
+            done < <(
+              printf '%s' "$login_html" |
+                grep --only-matching --extended-regexp '(href|src)="[^"]+"' |
+                cut --delimiter='"' --fields=2 |
+                grep '^/'
+            )
+          }
+
           test "$(
             docker compose exec --no-TTY postgres sh -ec \
               'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT 1"'
@@ -135,11 +180,18 @@ jobs:
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8082/health-status >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/getting-started/img-blog.png >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/clients/blazor.svg >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/health-status >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/api/file-clerk/example | jq --exit-status '.value == 42'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/api/file-clerk/example | jq --exit-status '.value == 42'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/getEnvConfig | jq --exit-status '.application.baseUrl == "http://localhost:8084"'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8083/)" = "308 http://localhost:8083/"
+          verify_blazor_bundle http://localhost:8081
+          verify_blazor_bundle http://localhost:8082
+          verify_account_page_assets http://localhost:8083
+          verify_account_page_assets http://localhost:8084
           docker compose logs app | grep --quiet "Migrations and seed data completed; starting demo hosts."
           test "$(
             docker compose exec --no-TTY postgres sh -ec \

@@ -98,7 +98,8 @@ COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY --chmod=755 docker/entrypoint.sh docker/healthcheck.sh docker/run-host.sh /app/bin/
 
 RUN nginx -t \
-    && rm --force /tmp/nginx/nginx.pid
+    && rm --force /tmp/nginx/nginx.pid \
+    && chown --recursive app:app /tmp/nginx
 
 USER app
 

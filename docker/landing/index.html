@@ -51,8 +51,9 @@
     const ports = window.fileClerkDemoPorts || {
       webapp: '8081', server: '8082', wasm: '8083', angular: '8084'
     };
+    const publicHost = window.fileClerkDemoPublicHost || window.location.hostname;
     document.querySelectorAll('[data-demo]').forEach(link => {
-      link.href = `${window.location.protocol}//${window.location.hostname}:${ports[link.dataset.demo]}`;
+      link.href = `http://${publicHost}:${ports[link.dataset.demo]}`;
     });
   </script>
 </body>
