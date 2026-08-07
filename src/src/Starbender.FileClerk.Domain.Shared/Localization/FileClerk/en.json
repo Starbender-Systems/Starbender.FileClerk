@@ -1,6 +1,7 @@
 {
   "culture": "en",
   "texts": {
+    "Permission:FileClerk": "File Clerk",
     "MyAccount":  "My account",
     "SamplePageMessage": "A sample page for the FileClerk module"
   }

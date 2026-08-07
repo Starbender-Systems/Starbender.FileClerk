@@ -28,6 +28,6 @@ public class ExampleController : FileClerkController, ISampleAppService
     [Authorize]
     public async Task<SampleDto> GetAuthorizedAsync()
     {
-        return await _sampleAppService.GetAsync();
+        return await _sampleAppService.GetAuthorizedAsync();
     }
 }

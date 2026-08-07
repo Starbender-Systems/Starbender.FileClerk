@@ -9,7 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" />
     <ProjectReference Include="..\..\src\Starbender.FileClerk.Application\Starbender.FileClerk.Application.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.Blazor\Starbender.FileClerk.Blazor.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.Blazor.Server\Starbender.FileClerk.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.Blazor.WebAssembly.Bundling\Starbender.FileClerk.Blazor.WebAssembly.Bundling.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.HttpApi\Starbender.FileClerk.HttpApi.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.HttpApi.Client\Starbender.FileClerk.HttpApi.Client.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.Installer\Starbender.FileClerk.Installer.csproj" />
+    <ProjectReference Include="..\..\src\Starbender.FileClerk.Web\Starbender.FileClerk.Web.csproj" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain.Tests\Starbender.FileClerk.Domain.Tests.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
   </ItemGroup>
