@@ -49,6 +49,8 @@ services:
       - "${APP_BIND_ADDRESS:-127.0.0.1}:${BLAZOR_WASM_PORT:-8083}:8083"
       - "${APP_BIND_ADDRESS:-127.0.0.1}:${ANGULAR_PORT:-8084}:8084"
       - "${APP_BIND_ADDRESS:-127.0.0.1}:${MVC_PORT:-8085}:8085"
+    volumes:
+      - data_protection_keys:/home/app/.aspnet/DataProtection-Keys
     healthcheck:
       test:
         - CMD
@@ -63,4 +65,5 @@ services:
       start_period: 90s
 
 volumes:
+  data_protection_keys:
   postgres_data:

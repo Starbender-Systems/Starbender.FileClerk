@@ -116,6 +116,8 @@ jobs:
               .services.app.environment.BLAZOR_WASM_PORT == "18083" and
               .services.app.environment.ANGULAR_PORT == "18084" and
               .services.app.environment.MVC_PORT == "18085" and
+              .services.app.volumes[0].target == "/home/app/.aspnet/DataProtection-Keys" and
+              .volumes.data_protection_keys != null and
               (.services.app.environment.ConnectionStrings__FileClerk |
                 contains("Database=fileclerk_override;Username=fileclerk_override;Password=fileclerk_override_only"))
             '
@@ -220,6 +222,65 @@ jobs:
             test ! -d /usr/share/dotnet/sdk
             test -z "$(find /app -type f \( -name "*.cs" -o -name "*.csproj" -o -name "package-lock.json" \) -print -quit)"
           '
+
+      - name: Verify MVC session survives application recreation
+        run: |
+          cookie_jar="$(mktemp)"
+          email_settings_response="$(mktemp)"
+          trap 'rm --force "$cookie_jar" "$email_settings_response"' EXIT
+
+          login_html="$(
+            curl --fail --silent --show-error \
+              --cookie-jar "$cookie_jar" \
+              http://localhost:8085/Account/Login
+          )"
+          login_token="$(
+            printf '%s' "$login_html" |
+              grep --only-matching 'name="__RequestVerificationToken" type="hidden" value="[^"]*"' |
+              head --lines=1 |
+              cut --delimiter='"' --fields=6
+          )"
+          test -n "$login_token"
+
+          test "$(
+            curl --silent --show-error \
+              --cookie "$cookie_jar" \
+              --cookie-jar "$cookie_jar" \
+              --data-urlencode "LoginInput.UserNameOrEmailAddress=admin" \
+              --data-urlencode "LoginInput.Password=1q2w3E*" \
+              --data-urlencode "LoginInput.RememberMe=false" \
+              --data-urlencode "__RequestVerificationToken=$login_token" \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              http://localhost:8085/Account/Login
+          )" = "302"
+
+          manage_html="$(
+            curl --fail --silent --show-error \
+              --cookie "$cookie_jar" \
+              --cookie-jar "$cookie_jar" \
+              http://localhost:8085/Account/Manage
+          )"
+          request_token="$(
+            printf '%s' "$manage_html" |
+              grep --only-matching 'name="__RequestVerificationToken" type="hidden" value="[^"]*"' |
+              head --lines=1 |
+              cut --delimiter='"' --fields=6
+          )"
+          test -n "$request_token"
+
+          docker compose up --detach --force-recreate --no-deps app
+          curl --retry 60 --retry-delay 1 --retry-all-errors \
+            --fail --silent --show-error \
+            http://localhost:8085/health-status >/dev/null
+
+          curl --fail --silent --show-error \
+            --cookie "$cookie_jar" \
+            --header "RequestVerificationToken: $request_token" \
+            --data-urlencode "id=Volo.Abp.EmailSetting" \
+            --output "$email_settings_response" \
+            http://localhost:8085/SettingManagement?handler=RenderView
+          grep --quiet 'EmailSettingsForm' "$email_settings_response"
 
       - name: Verify database persistence
         run: |

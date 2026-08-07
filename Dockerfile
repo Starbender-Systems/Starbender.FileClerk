@@ -84,13 +84,14 @@ RUN apt-get update \
         /app/landing \
         /app/migrator/Logs \
         /app/mvc/Logs \
+        /home/app/.aspnet/DataProtection-Keys \
         /tmp/nginx/client-body \
         /tmp/nginx/fastcgi \
         /tmp/nginx/proxy \
         /tmp/nginx/scgi \
         /tmp/nginx/uwsgi \
         /tmp/supervisor \
-    && chown --recursive app:app /app /tmp/nginx /tmp/supervisor
+    && chown --recursive app:app /app /home/app/.aspnet /tmp/nginx /tmp/supervisor
 
 COPY --chown=app:app --from=dotnet-build /out/api /app/api
 COPY --chown=app:app --from=dotnet-build /out/blazor-server /app/blazor-server

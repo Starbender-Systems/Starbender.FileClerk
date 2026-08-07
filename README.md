@@ -136,7 +136,9 @@ Every application uses the ABP Basic Theme and the same PostgreSQL schema and
 data. The two static clients have separate OpenIddict registrations and run
 against separate instances of the shared HTTP API host so each authority stays
 same-origin. Both `Default` and `FileClerk` remote services and connection
-strings resolve to the shared backend.
+strings resolve to the shared backend. ASP.NET Data Protection keys are stored
+in a separate Docker volume so login sessions and antiforgery tokens remain
+valid when the application container is rebuilt or recreated.
 
 ### Configuration
 
@@ -179,7 +181,8 @@ Stop without deleting data:
 docker compose down
 ```
 
-Delete the shared database volume and reseed a clean administrator account:
+Delete the shared database and Data Protection volumes, invalidate existing
+browser sessions, and reseed a clean administrator account:
 
 ```bash
 docker compose down --volumes
@@ -202,6 +205,8 @@ docker compose up --detach --wait
   visible from the other four.
 - Restart the stack and confirm the change survives; use the reset procedure
   only when a clean database is wanted.
+- While logged into MVC, open Administration > Settings > Emailing, recreate the
+  application container, and confirm the tab still loads without a 400 error.
 
 ## Repository layout
 
