@@ -3,7 +3,8 @@
 ## Supported versions
 
 FileClerk is under active development and has no released package versions.
-Security fixes currently target the latest commit on `main`.
+Security fixes currently target the latest commit on `development` and are
+promoted to `main` through the release process.
 
 ## Reporting a vulnerability
 
