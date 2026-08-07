@@ -228,7 +228,8 @@ jobs:
           cookie_jar="$(mktemp)"
           email_settings_response="$(mktemp)"
           global_script_response="$(mktemp)"
-          trap 'rm --force "$cookie_jar" "$email_settings_response" "$global_script_response"' EXIT
+          antiforgery_headers="$(mktemp)"
+          trap 'rm --force "$cookie_jar" "$email_settings_response" "$global_script_response" "$antiforgery_headers"' EXIT
 
           login_html="$(
             curl --fail --silent --show-error \
@@ -276,8 +277,12 @@ jobs:
             --cookie "$cookie_jar" \
             --cookie "XSRF-TOKEN=stale-token-from-another-demo" \
             --cookie-jar "$cookie_jar" \
+            --dump-header "$antiforgery_headers" \
             --output /dev/null \
             http://localhost:8085/Abp/ApplicationConfigurationScript
+          grep --ignore-case --quiet \
+            '^set-cookie: XSRF-TOKEN-MVC-v1=.*samesite=lax' \
+            "$antiforgery_headers"
           request_token="$(
             awk '$6 == "XSRF-TOKEN-MVC-v1" { print $7 }' "$cookie_jar" |
               tail --lines=1

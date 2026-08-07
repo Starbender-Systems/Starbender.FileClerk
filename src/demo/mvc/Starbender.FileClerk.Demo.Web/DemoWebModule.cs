@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -177,7 +178,10 @@ public class DemoWebModule : AbpModule
         {
             // Cookies are scoped by hostname, not port. Keep MVC's token isolated from
             // stale tokens and tokens issued by the other localhost demo applications.
+            // The Docker demo is served over HTTP, where browsers reject SameSite=None
+            // cookies without Secure and leave ABP unable to attach the request token.
             options.TokenCookie.Name = "XSRF-TOKEN-MVC-v1";
+            options.TokenCookie.SameSite = SameSiteMode.Lax;
         });
     }
 
