@@ -34,20 +34,23 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore src/Starbender.FileClerk.slnx
+        run: |
+          dotnet restore src/Starbender.FileClerk.slnx
+          dotnet restore src/demo/Starbender.FileClerk.Demo.slnx
 
       - name: Build
-        run: dotnet build src/Starbender.FileClerk.slnx --configuration Release --no-restore
+        run: |
+          dotnet build src/Starbender.FileClerk.slnx --configuration Release --no-restore
+          dotnet build src/demo/Starbender.FileClerk.Demo.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test src/Starbender.FileClerk.slnx --configuration Release --no-build
+        run: |
+          dotnet test src/Starbender.FileClerk.slnx --configuration Release --no-build
+          dotnet test src/demo/Starbender.FileClerk.Demo.slnx --configuration Release --no-build
 
   angular:
     name: Angular build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/angular
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,21 +60,30 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: src/angular/package-lock.json
+          cache-dependency-path: |
+            src/angular/package-lock.json
+            src/demo/angular/package-lock.json
 
-      - name: Install dependencies
+      - name: Install library dependencies
+        working-directory: src/angular
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint and build library
+        working-directory: src/angular
+        run: npm run lint && npm run build
 
-      - name: Build
-        run: npm run build
+      - name: Install demo dependencies
+        working-directory: src/demo/angular
+        run: npm ci
+
+      - name: Lint and build demo
+        working-directory: src/demo/angular
+        run: npm run lint && npm run build:prod
 
   container:
     name: Container stack
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,13 +96,24 @@ jobs:
           POSTGRES_PASSWORD=fileclerk_override_only \
           POSTGRES_PORT=55432 \
           LANDING_PORT=18080 \
+          BLAZOR_WEBAPP_PORT=18081 \
+          BLAZOR_SERVER_PORT=18082 \
+          BLAZOR_WASM_PORT=18083 \
+          ANGULAR_PORT=18084 \
+          DEMO_PUBLIC_HOST=fileclerk.example.test \
           docker compose config --format json |
             jq --exit-status '
               .services.postgres.ports[0].published == "55432" and
-              .services.app.ports[0].published == "18080" and
+              ([.services.app.ports[].published] | sort == ["18080", "18081", "18082", "18083", "18084"]) and
               .services.postgres.environment.POSTGRES_DB == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_USER == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_PASSWORD == "fileclerk_override_only" and
+              .services.app.environment.DEMO_PUBLIC_HOST == "fileclerk.example.test" and
+              .services.app.environment.LANDING_PORT == "18080" and
+              .services.app.environment.BLAZOR_WEBAPP_PORT == "18081" and
+              .services.app.environment.BLAZOR_SERVER_PORT == "18082" and
+              .services.app.environment.BLAZOR_WASM_PORT == "18083" and
+              .services.app.environment.ANGULAR_PORT == "18084" and
               (.services.app.environment.ConnectionStrings__FileClerk |
                 contains("Database=fileclerk_override;Username=fileclerk_override;Password=fileclerk_override_only"))
             '
@@ -103,19 +126,88 @@ jobs:
 
       - name: Verify services
         run: |
+          verify_blazor_bundle() {
+            base_url="$1"
+            bundle_path="$(
+              curl --fail --silent --show-error "$base_url/" |
+                grep --only-matching '/__bundles/[^"]*\.css' |
+                head --lines=1
+            )"
+            test -n "$bundle_path"
+            curl --fail --silent --show-error "$base_url$bundle_path" >/dev/null
+          }
+
+          verify_account_page_assets() {
+            base_url="$1"
+            login_html="$(curl --fail --silent --show-error "$base_url/Account/Login")"
+
+            while IFS= read -r asset_path; do
+              case "$asset_path" in
+                //*) continue ;;
+                *.css*) expected_type="text/css" ;;
+                *.js*) expected_type="javascript" ;;
+                *.svg*) expected_type="image/svg+xml" ;;
+                *) continue ;;
+              esac
+
+              actual_type="$(
+                curl --fail --location --silent --show-error \
+                  --output /dev/null --write-out '%{content_type}' \
+                  "$base_url$asset_path"
+              )"
+              case "$actual_type" in
+                *"$expected_type"*) ;;
+                *)
+                  echo "Unexpected content type for $base_url$asset_path: $actual_type" >&2
+                  return 1
+                  ;;
+              esac
+            done < <(
+              printf '%s' "$login_html" |
+                grep --only-matching --extended-regexp '(href|src)="[^"]+"' |
+                cut --delimiter='"' --fields=2 |
+                grep '^/'
+            )
+          }
+
           test "$(
             docker compose exec --no-TTY postgres sh -ec \
               'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT 1"'
           )" = "1"
-          curl --fail --silent --show-error http://localhost:8080/health
-          curl --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/health
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8081/ >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8082/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/ >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/getting-started/img-blog.png >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/clients/blazor.svg >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/ >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/getEnvConfig | jq --exit-status '.application.baseUrl == "http://localhost:8084"'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8083/)" = "308 http://localhost:8083/"
+          verify_blazor_bundle http://localhost:8081
+          verify_blazor_bundle http://localhost:8082
+          verify_account_page_assets http://localhost:8083
+          verify_account_page_assets http://localhost:8084
+          docker compose logs app | grep --quiet "Migrations and seed data completed; starting demo hosts."
+          test "$(
+            docker compose exec --no-TTY postgres sh -ec \
+              'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT COUNT(*) FROM \"__EFMigrationsHistory\""'
+          )" -ge 1
+          test "$(
+            docker compose exec --no-TTY postgres sh -ec \
+              'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT COUNT(*) FROM \"AbpUsers\" WHERE \"UserName\" = '\''admin'\''"'
+          )" = "1"
           docker compose exec --no-TTY app sh -ec '
             test "$(id -u)" -ne 0
-            test -f /opt/fileclerk/build-info/dotnet-build-complete
-            test -f /opt/fileclerk/build-info/angular-build-complete
             test ! -e /workspace
             test ! -e /app/node_modules
             test ! -e /root/.nuget
+            test ! -d /usr/share/dotnet/sdk
+            test -z "$(find /app -type f \( -name "*.cs" -o -name "*.csproj" -o -name "package-lock.json" \) -print -quit)"
           '
 
       - name: Verify database persistence

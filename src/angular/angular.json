@@ -6,11 +6,6 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "dev-app": {
-      "projectType": "application",
-      "root": "projects/dev-app",
-      "sourceRoot": "projects/dev-app/src"
-    },
     "file-clerk": {
       "projectType": "library",
       "root": "projects/file-clerk",

@@ -86,14 +86,15 @@ article p {
   color: #94a3b8;
 }
 
-.status {
-  display: inline-block;
-  padding: 0.35rem 0.65rem;
+.demo-grid article > a {
+  display: inline-flex;
+  padding: 0.5rem 0.85rem;
   border-radius: 999px;
-  background: rgba(52, 211, 153, 0.12);
-  color: #6ee7b7;
-  font-size: 0.78rem;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.85rem;
   font-weight: 700;
+  text-decoration: none;
 }
 
 footer {

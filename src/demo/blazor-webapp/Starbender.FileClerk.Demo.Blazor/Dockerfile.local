@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS base
+USER $APP_UID
+EXPOSE 8080
+EXPOSE 8081
+
+COPY bin/Release/net10.0/publish/ app/
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+RUN dotnet dev-certs https -v -ep openiddict.pfx -p 316bba47-f9e9-40fd-96f4-ee8ae3673786
+RUN chmod 644 openiddict.pfx
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /src .
+
+ENTRYPOINT ["dotnet", "Starbender.FileClerk.Demo.Blazor.dll"]

@@ -5,18 +5,7 @@ BLOB storage containers and their provider configuration.
 
 > [!IMPORTANT]
 > FileClerk is under active development. No NuGet or npm packages have been
-> released, and the current repository is a module foundation rather than a
-> production-ready storage-management product.
-
-## Project status
-
-The repository currently provides the generated ABP module layers, Entity
-Framework Core integration, HTTP API, MVC, Blazor, Angular, installer, and test
-projects. Container management, provider registration, permissions, feature
-configuration, and demo applications are tracked on the
-[project issue list](https://github.com/Starbender-Systems/Starbender.FileClerk/issues).
-Issue [#11](https://github.com/Starbender-Systems/Starbender.FileClerk/issues/11)
-is the top-level feature roadmap.
+> released, and the current repository is not production ready.
 
 ## Compatibility
 
@@ -32,24 +21,20 @@ The repository pins the .NET and Node.js toolchains through `global.json` and
 
 ## Build from a clean clone
 
-### .NET solution
+Build and test the reusable module:
 
 ```bash
 dotnet restore src/Starbender.FileClerk.slnx
 dotnet build src/Starbender.FileClerk.slnx --configuration Release --no-restore
 dotnet test src/Starbender.FileClerk.slnx --configuration Release --no-build
-```
 
-### Angular library
-
-Use a Node version manager that honors `.nvmrc`, then run:
-
-```bash
 cd src/angular
 npm ci
 npm run lint
 npm run build
 ```
+The independently buildable demo solution includes the shared backend, all
+four .NET UI hosts, and the standard ABP test projects:
 
 ## NuGet packages and versions
 
@@ -108,41 +93,54 @@ before expiry.
 
 ## Demo containers
 
-The repository includes an immutable Docker Compose environment with two
-services: PostgreSQL and a Linux application container. The application image
-builds the complete .NET solution and Angular library, then serves a placeholder
-landing page until the runnable demo applications are added.
+```bash
+dotnet restore src/demo/Starbender.FileClerk.Demo.slnx
+dotnet build src/demo/Starbender.FileClerk.Demo.slnx --configuration Release --no-restore
+dotnet test src/demo/Starbender.FileClerk.Demo.slnx --configuration Release --no-build
 
-Docker Engine with Docker Compose v2 is the only host prerequisite. Start the
-environment from the repository root:
+cd src/demo/angular
+npm ci
+npm run lint
+npm run build:prod
+```
+
+## Demo applications
+
+Docker Compose is the supported way to run the demos. It builds one non-root
+application image and starts it beside PostgreSQL. The entrypoint runs the
+single shared DbMigrator synchronously before Supervisor starts any web host.
 
 ```bash
 docker compose up --build --detach --wait
-```
-
-Open <http://localhost:8080> to view the landing page. Inspect container health
-and logs with:
-
-```bash
 docker compose ps
-docker compose logs --follow
+docker compose logs --follow app
 ```
 
-The PostgreSQL service creates one database shared by every future demo host.
-The application container receives both `ConnectionStrings__Default` and
-`ConnectionStrings__FileClerk` with this internal connection information:
+| URL | Application |
+| --- | --- |
+| <http://localhost:8080> | Demo landing page |
+| <http://localhost:8081> | Blazor WebApp |
+| <http://localhost:8082> | Blazor Server |
+| <http://localhost:8083> | Blazor WebAssembly and its same-origin API/auth proxy |
+| <http://localhost:8084> | Angular and its same-origin API/auth proxy |
+
+Use the template-seeded administrator account:
 
 ```text
-Host=postgres;Port=5432;Database=fileclerk;Username=fileclerk;Password=fileclerk_dev_only
+Username: admin
+Password: 1q2w3E*
 ```
 
-> [!WARNING]
-> `fileclerk_dev_only` is a known local-development password. Never use it in a
-> deployed environment.
+Every application uses the ABP Basic Theme and the same PostgreSQL schema and
+data. The two static clients have separate OpenIddict registrations and run
+against separate instances of the shared HTTP API host so each authority stays
+same-origin. Both `Default` and `FileClerk` remote services and connection
+strings resolve to the shared backend.
 
-All settings have Compose defaults and can be overridden with shell environment
-variables or an ignored `.env` file. Copy `.env.example` when a persistent local
-override file is useful.
+### Configuration
+
+Copy `.env.example` to `.env` to persist overrides. Defaults are intended only
+for local manual testing.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
@@ -151,42 +149,69 @@ override file is useful.
 | `POSTGRES_PASSWORD` | `fileclerk_dev_only` | Local-only database password |
 | `DATABASE_BIND_ADDRESS` | `127.0.0.1` | PostgreSQL host bind address |
 | `POSTGRES_PORT` | `5432` | PostgreSQL host port |
-| `APP_BIND_ADDRESS` | `127.0.0.1` | Demo application host bind address |
+| `APP_BIND_ADDRESS` | `127.0.0.1` | Web application bind address |
+| `DEMO_PUBLIC_HOST` | `localhost` | Browser-visible hostname used in issuer and callback URLs |
+| `DEMO_ENCRYPTION_PASSPHRASE` | development value | Shared ABP string-encryption passphrase |
 | `LANDING_PORT` | `8080` | Landing page host port |
-| `MVC_PORT` | `8081` | Reserved MVC/Razor Pages host port |
-| `BLAZOR_SERVER_PORT` | `8082` | Reserved Blazor Server host port |
-| `BLAZOR_WASM_PORT` | `8083` | Reserved Blazor WebAssembly host port |
-| `ANGULAR_PORT` | `8084` | Reserved Angular host port |
+| `BLAZOR_WEBAPP_PORT` | `8081` | Blazor WebApp host port |
+| `BLAZOR_SERVER_PORT` | `8082` | Blazor Server host port |
+| `BLAZOR_WASM_PORT` | `8083` | Blazor WebAssembly host port |
+| `ANGULAR_PORT` | `8084` | Angular host port |
 
-Only the landing page listens today; the other ports reserve a stable contract
-for the upcoming demos. Angular and Blazor WebAssembly will serve static content
-and reverse-proxy their backend routes through their single assigned ports.
+If a public port is overridden, the entrypoint updates OpenIddict clients,
+Angular runtime configuration, and landing-page links before startup. For
+example:
 
-Stop the environment while retaining the database volume:
+```bash
+BLAZOR_WEBAPP_PORT=18081 ANGULAR_PORT=18084 docker compose up --build --detach --wait
+```
+
+The known development database password and encryption passphrase must never be
+reused in a deployed environment.
+
+### Resetting the demo
+
+Stop without deleting data:
 
 ```bash
 docker compose down
 ```
 
-To intentionally delete all demo database data and start fresh, remove the named
-volume as well:
+Delete the shared database volume and reseed a clean administrator account:
 
 ```bash
 docker compose down --volumes
+docker compose up --detach --wait
 ```
 
-The module remains database-provider-neutral. The future demo hosts will own the
-PostgreSQL provider configuration and migrations. One designated migrator must
-finish before Supervisor starts any host; individual UI applications must not
-run competing migrations.
+### Manual test checklist
+
+- Open every URL and confirm the ABP Basic Theme, home page, localization menu,
+  and FileClerk navigation/page render.
+- Log in and out as `admin`, then open Identity users/roles and tenant
+  administration in each UI.
+- Call `/api/file-clerk/example` through ports 8083 and 8084 and confirm the
+  response contains `{"value":42}`.
+- Confirm Blazor WebApp server rendering becomes interactive and Blazor Server
+  remains functional across navigation (WebSockets are proxied by Nginx).
+- Create or change a user/tenant in one UI and confirm the shared state is
+  visible from the other three.
+- Restart the stack and confirm the change survives; use the reset procedure
+  only when a clean database is wanted.
 
 ## Repository layout
 
 | Path | Purpose |
 | --- | --- |
 | `src/src/` | Reusable ABP module projects and UI integrations |
-| `src/test/` | Shared, domain, application, and EF Core tests |
-| `src/angular/` | Angular library workspace |
+| `src/test/` | Reusable module tests |
+| `src/angular/` | Reusable Angular library workspace |
+| `src/demo/shared/` | Shared layered backend, API host, EF migrations, and DbMigrator |
+| `src/demo/angular/` | Angular demo application |
+| `src/demo/blazor-server/` | Blazor Server demo |
+| `src/demo/blazor-webapp/` | Blazor WebApp server and interactive client |
+| `src/demo/blazor-webassembly/` | Blazor WebAssembly client and static host |
+| `src/demo/test/` | Shared backend Domain, Application, and EF Core tests |
 | `src/Directory.Packages.props` | Centrally managed NuGet versions |
 | `GitVersion.yml` | Release-line and semantic-version increment rules |
 | `docker/` | Landing page and Linux application-server configuration |
