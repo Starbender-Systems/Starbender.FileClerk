@@ -19,8 +19,9 @@
       <Pack>true</Pack>
       <PackagePath>content\</PackagePath>
     </Content>
-    <None Remove="..\..\**\*.abppkg*" />
-    <Content Include="..\..\**\*.abppkg*">
+    <None Remove="..\..\src\**\*.abppkg*" />
+    <Content Include="..\..\src\**\*.abppkg*"
+             Exclude="..\..\src\**\bin\**;..\..\src\**\obj\**">
       <Pack>true</Pack>
       <PackagePath>content\</PackagePath>
     </Content>

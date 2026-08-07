@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+      - development
+    tags:
+      - "v*.*.*"
   pull_request:
     branches:
       - main
+      - development
   workflow_dispatch:
 
 permissions:
@@ -145,3 +149,157 @@ jobs:
         with:
           fail-on-severity: moderate
           fail-on-scopes: runtime
+
+  nuget:
+    name: NuGet packages
+    needs:
+      - dotnet
+      - angular
+      - container
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: ${{ steps.version.outputs.artifact-name }}
+      package-version: ${{ steps.version.outputs.package-version }}
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Calculate package version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_version="$(dotnet gitversion /showvariable MajorMinorPatch)"
+          package_version="${base_version}-ci-${GITHUB_RUN_NUMBER}"
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            if [[ ! "${GITHUB_REF_NAME}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+              echo "Release tags must match vMajor.Minor.Fix without leading zeroes." >&2
+              exit 1
+            fi
+
+            tag_version="${GITHUB_REF_NAME#v}"
+            if [[ "$tag_version" != "$base_version" ]]; then
+              echo "Tag version $tag_version does not match GitVersion base $base_version." >&2
+              exit 1
+            fi
+
+            if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+              echo "Full-history checkout did not provide origin/main." >&2
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main; then
+              echo "Release tag commit must be reachable from main." >&2
+              exit 1
+            fi
+
+            package_version="$tag_version"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "development" ]]; then
+            package_version="${base_version}-prerelease-${GITHUB_RUN_NUMBER}"
+          fi
+
+          echo "package-version=$package_version" >> "$GITHUB_OUTPUT"
+          echo "artifact-name=nuget-packages-$package_version" >> "$GITHUB_OUTPUT"
+          echo "Packaging version $package_version"
+
+      - name: Restore solution
+        run: dotnet restore src/Starbender.FileClerk.slnx
+
+      - name: Build versioned solution
+        run: >-
+          dotnet build src/Starbender.FileClerk.slnx
+          --configuration Release
+          --no-restore
+          -p:Version=${{ steps.version.outputs.package-version }}
+          -p:PackageVersion=${{ steps.version.outputs.package-version }}
+          -p:ContinuousIntegrationBuild=true
+          -p:RepositoryCommit=${{ github.sha }}
+
+      - name: Pack module projects
+        run: >-
+          dotnet pack src/Starbender.FileClerk.slnx
+          --configuration Release
+          --no-build
+          --no-restore
+          -p:Version=${{ steps.version.outputs.package-version }}
+          -p:PackageVersion=${{ steps.version.outputs.package-version }}
+          -p:ContinuousIntegrationBuild=true
+          -p:RepositoryCommit=${{ github.sha }}
+          -p:PackageOutputPath=${{ github.workspace }}/artifacts/nuget
+
+      - name: Validate package contents
+        run: >-
+          ./scripts/validate-nuget-packages.sh
+          artifacts/nuget
+          ${{ steps.version.outputs.package-version }}
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.version.outputs.artifact-name }}
+          path: artifacts/nuget/*.nupkg
+          if-no-files-found: error
+          retention-days: 30
+
+  nuget-publish:
+    name: Publish NuGet packages
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - nuget
+    runs-on: ubuntu-latest
+    environment: nuget.org
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout validation script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download validated packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.nuget.outputs.artifact-name }}
+          path: artifacts/nuget
+
+      - name: Revalidate release packages
+        run: >-
+          ./scripts/validate-nuget-packages.sh
+          artifacts/nuget
+          ${{ needs.nuget.outputs.package-version }}
+
+      - name: Publish stable packages to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${NUGET_API_KEY:-}" ]]; then
+            echo "This repository must have access to the NUGET_API_KEY Actions secret." >&2
+            exit 1
+          fi
+
+          for package in artifacts/nuget/*.nupkg; do
+            dotnet nuget push "$package" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key "$NUGET_API_KEY" \
+              --skip-duplicate
+          done

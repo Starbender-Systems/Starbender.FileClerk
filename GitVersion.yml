@@ -1,0 +1,19 @@
+workflow: GitFlow/v1
+next-version: 0.1.0
+tag-prefix: '[vV]?'
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+commit-message-incrementing: Enabled
+branches:
+  main:
+    regex: ^main$
+    label: ''
+    increment: Patch
+    is-main-branch: true
+  develop:
+    regex: ^development$
+    label: prerelease
+    increment: Patch
+    mode: ContinuousDeployment
+    source-branches:
+      - main
