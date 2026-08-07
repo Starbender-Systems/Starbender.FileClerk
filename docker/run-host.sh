@@ -53,6 +53,14 @@ case "$role" in
         cd /app/blazor-wasm
         exec dotnet Starbender.FileClerk.Demo.BlazorWebAssembly.Blazor.dll
         ;;
+    mvc)
+        origin="http://${public_host}:${MVC_PORT:-8085}"
+        health_origin=http://127.0.0.1:5005
+        startup_url=${health_origin}/health-status
+        export ASPNETCORE_URLS=http://0.0.0.0:5005
+        app_dir=/app/mvc
+        app_dll=Starbender.FileClerk.Demo.Web.dll
+        ;;
     *)
         echo "Unknown host role: $role" >&2
         exit 64

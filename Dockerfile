@@ -29,6 +29,8 @@ RUN dotnet tool install --tool-path /tools Volo.Abp.Studio.Cli --version 3.0.8 \
     && cd /workspace/src/demo/blazor-webapp/Starbender.FileClerk.Demo.Blazor \
     && abp install-libs \
     && cd /workspace/src/demo/blazor-server/Starbender.FileClerk.Demo.BlazorServer \
+    && abp install-libs \
+    && cd /workspace/src/demo/mvc/Starbender.FileClerk.Demo.Web \
     && abp install-libs
 
 RUN dotnet dev-certs https \
@@ -44,9 +46,12 @@ RUN dotnet dev-certs https \
         --configuration Release --no-restore --output /out/blazor-server \
     && dotnet publish src/demo/blazor-webassembly/Starbender.FileClerk.Demo.BlazorWebAssembly/Starbender.FileClerk.Demo.BlazorWebAssembly.Blazor.csproj \
         --configuration Release --no-restore --output /out/blazor-wasm \
+    && dotnet publish src/demo/mvc/Starbender.FileClerk.Demo.Web/Starbender.FileClerk.Demo.Web.csproj \
+        --configuration Release --no-restore --output /out/mvc \
     && cp /tmp/openiddict.pfx /out/api/openiddict.pfx \
     && cp /tmp/openiddict.pfx /out/blazor-webapp/openiddict.pfx \
-    && cp /tmp/openiddict.pfx /out/blazor-server/openiddict.pfx
+    && cp /tmp/openiddict.pfx /out/blazor-server/openiddict.pfx \
+    && cp /tmp/openiddict.pfx /out/mvc/openiddict.pfx
 
 
 FROM node-base AS angular-build
@@ -78,6 +83,7 @@ RUN apt-get update \
         /app/blazor-webapp/Logs \
         /app/landing \
         /app/migrator/Logs \
+        /app/mvc/Logs \
         /tmp/nginx/client-body \
         /tmp/nginx/fastcgi \
         /tmp/nginx/proxy \
@@ -91,6 +97,7 @@ COPY --chown=app:app --from=dotnet-build /out/blazor-server /app/blazor-server
 COPY --chown=app:app --from=dotnet-build /out/blazor-wasm /app/blazor-wasm
 COPY --chown=app:app --from=dotnet-build /out/blazor-webapp /app/blazor-webapp
 COPY --chown=app:app --from=dotnet-build /out/migrator /app/migrator
+COPY --chown=app:app --from=dotnet-build /out/mvc /app/mvc
 COPY --chown=app:app --from=angular-build /workspace/src/demo/angular/dist/Angular/browser /app/angular
 COPY --chown=app:app docker/landing /app/landing
 COPY docker/nginx.conf /etc/nginx/nginx.conf
@@ -103,7 +110,7 @@ RUN nginx -t \
 
 USER app
 
-EXPOSE 8080 8081 8082 8083 8084
+EXPOSE 8080 8081 8082 8083 8084 8085
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=90s --retries=12 CMD ["/app/bin/healthcheck.sh"]
 ENTRYPOINT ["/app/bin/entrypoint.sh"]

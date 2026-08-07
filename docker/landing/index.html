@@ -13,7 +13,7 @@
     <p class="eyebrow">Starbender Systems</p>
     <h1>FileClerk demos</h1>
     <p class="intro">
-      Four ABP Basic Theme applications exercise the same FileClerk backend and
+      Five ABP Basic Theme applications exercise the same FileClerk backend and
       PostgreSQL data. Sign in to any application with <strong>admin / 1q2w3E*</strong>.
     </p>
 
@@ -40,6 +40,11 @@
           <p>Angular 22.1 UI with the local FileClerk package wired by source path.</p>
           <a data-demo="angular" href="#">Open Angular</a>
         </article>
+        <article>
+          <h3>MVC</h3>
+          <p>Server-rendered Razor Pages with the local FileClerk MVC module.</p>
+          <a data-demo="mvc" href="#">Open MVC</a>
+        </article>
       </div>
     </section>
 
@@ -49,7 +54,7 @@
   </main>
   <script>
     const ports = window.fileClerkDemoPorts || {
-      webapp: '8081', server: '8082', wasm: '8083', angular: '8084'
+      webapp: '8081', server: '8082', wasm: '8083', angular: '8084', mvc: '8085'
     };
     const publicHost = window.fileClerkDemoPublicHost || window.location.hostname;
     document.querySelectorAll('[data-demo]').forEach(link => {

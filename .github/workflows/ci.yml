@@ -100,11 +100,12 @@ jobs:
           BLAZOR_SERVER_PORT=18082 \
           BLAZOR_WASM_PORT=18083 \
           ANGULAR_PORT=18084 \
+          MVC_PORT=18085 \
           DEMO_PUBLIC_HOST=fileclerk.example.test \
           docker compose config --format json |
             jq --exit-status '
               .services.postgres.ports[0].published == "55432" and
-              ([.services.app.ports[].published] | sort == ["18080", "18081", "18082", "18083", "18084"]) and
+              ([.services.app.ports[].published] | sort == ["18080", "18081", "18082", "18083", "18084", "18085"]) and
               .services.postgres.environment.POSTGRES_DB == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_USER == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_PASSWORD == "fileclerk_override_only" and
@@ -114,6 +115,7 @@ jobs:
               .services.app.environment.BLAZOR_SERVER_PORT == "18082" and
               .services.app.environment.BLAZOR_WASM_PORT == "18083" and
               .services.app.environment.ANGULAR_PORT == "18084" and
+              .services.app.environment.MVC_PORT == "18085" and
               (.services.app.environment.ConnectionStrings__FileClerk |
                 contains("Database=fileclerk_override;Username=fileclerk_override;Password=fileclerk_override_only"))
             '
@@ -126,7 +128,7 @@ jobs:
 
       - name: Verify services
         run: |
-          verify_blazor_bundle() {
+          verify_theme_bundle() {
             base_url="$1"
             bundle_path="$(
               curl --fail --silent --show-error "$base_url/" |
@@ -176,6 +178,7 @@ jobs:
           )" = "1"
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/health
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet 'data-demo="mvc"'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8081/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8082/health-status >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/ >/dev/null
@@ -184,14 +187,22 @@ jobs:
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/clients/blazor.svg >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/ >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/FileClerk | grep --quiet "FileClerk"
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/api/file-clerk/example | jq --exit-status '.value == 42'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/.well-known/openid-configuration | jq --exit-status '.issuer == "http://localhost:8085/"'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/getEnvConfig | jq --exit-status '.application.baseUrl == "http://localhost:8084"'
           test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8083/)" = "308 http://localhost:8083/"
-          verify_blazor_bundle http://localhost:8081
-          verify_blazor_bundle http://localhost:8082
+          test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8085/)" = "308 http://localhost:8085/"
+          verify_theme_bundle http://localhost:8081
+          verify_theme_bundle http://localhost:8082
           verify_account_page_assets http://localhost:8083
           verify_account_page_assets http://localhost:8084
+          verify_theme_bundle http://localhost:8085
+          verify_account_page_assets http://localhost:8085
           docker compose logs app | grep --quiet "Migrations and seed data completed; starting demo hosts."
           test "$(
             docker compose exec --no-TTY postgres sh -ec \

@@ -123,6 +123,7 @@ docker compose logs --follow app
 | <http://localhost:8082> | Blazor Server |
 | <http://localhost:8083> | Blazor WebAssembly and its same-origin API/auth proxy |
 | <http://localhost:8084> | Angular and its same-origin API/auth proxy |
+| <http://localhost:8085> | MVC/Razor Pages |
 
 Use the template-seeded administrator account:
 
@@ -157,13 +158,14 @@ for local manual testing.
 | `BLAZOR_SERVER_PORT` | `8082` | Blazor Server host port |
 | `BLAZOR_WASM_PORT` | `8083` | Blazor WebAssembly host port |
 | `ANGULAR_PORT` | `8084` | Angular host port |
+| `MVC_PORT` | `8085` | MVC/Razor Pages host port |
 
 If a public port is overridden, the entrypoint updates OpenIddict clients,
 Angular runtime configuration, and landing-page links before startup. For
 example:
 
 ```bash
-BLAZOR_WEBAPP_PORT=18081 ANGULAR_PORT=18084 docker compose up --build --detach --wait
+BLAZOR_WEBAPP_PORT=18081 ANGULAR_PORT=18084 MVC_PORT=18085 docker compose up --build --detach --wait
 ```
 
 The known development database password and encryption passphrase must never be
@@ -192,10 +194,12 @@ docker compose up --detach --wait
   administration in each UI.
 - Call `/api/file-clerk/example` through ports 8083 and 8084 and confirm the
   response contains `{"value":42}`.
+- Open `/FileClerk` and call `/api/file-clerk/example` through port 8085 to
+  confirm the MVC module page and local API are available.
 - Confirm Blazor WebApp server rendering becomes interactive and Blazor Server
   remains functional across navigation (WebSockets are proxied by Nginx).
 - Create or change a user/tenant in one UI and confirm the shared state is
-  visible from the other three.
+  visible from the other four.
 - Restart the stack and confirm the change survives; use the reset procedure
   only when a clean database is wanted.
 
@@ -211,6 +215,7 @@ docker compose up --detach --wait
 | `src/demo/blazor-server/` | Blazor Server demo |
 | `src/demo/blazor-webapp/` | Blazor WebApp server and interactive client |
 | `src/demo/blazor-webassembly/` | Blazor WebAssembly client and static host |
+| `src/demo/mvc/` | MVC/Razor Pages demo |
 | `src/demo/test/` | Shared backend Domain, Application, and EF Core tests |
 | `src/Directory.Packages.props` | Centrally managed NuGet versions |
 | `GitVersion.yml` | Release-line and semantic-version increment rules |
