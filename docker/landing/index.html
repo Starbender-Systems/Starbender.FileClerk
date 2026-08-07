@@ -19,32 +19,68 @@
 
     <section aria-labelledby="demo-heading">
       <h2 id="demo-heading">Choose a user interface</h2>
-      <div class="demo-grid">
-        <article>
-          <h3>Blazor WebApp</h3>
-          <p>Server rendering with an interactive WebAssembly client.</p>
-          <a data-demo="webapp" href="#">Open Blazor WebApp</a>
-        </article>
-        <article>
-          <h3>Blazor Server</h3>
-          <p>Interactive server rendering over a WebSocket connection.</p>
-          <a data-demo="server" href="#">Open Blazor Server</a>
-        </article>
-        <article>
-          <h3>Blazor WebAssembly</h3>
-          <p>Browser-hosted UI with a same-origin API and authentication proxy.</p>
-          <a data-demo="wasm" href="#">Open Blazor WebAssembly</a>
-        </article>
-        <article>
-          <h3>Angular</h3>
-          <p>Angular 22.1 UI with the local FileClerk package wired by source path.</p>
-          <a data-demo="angular" href="#">Open Angular</a>
-        </article>
-        <article>
-          <h3>MVC</h3>
-          <p>Server-rendered Razor Pages with the local FileClerk MVC module.</p>
-          <a data-demo="mvc" href="#">Open MVC</a>
-        </article>
+      <div class="demo-table-wrapper">
+        <table class="demo-table" aria-labelledby="demo-heading">
+          <colgroup>
+            <col class="logo-column">
+            <col class="framework-column">
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Logo</th>
+              <th scope="col">UI framework</th>
+              <th scope="col">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-demo-row="webapp">
+              <td><img class="framework-logo" src="/images/clients/blazor.svg" alt="" width="48" height="48"></td>
+              <td>
+                <a class="framework-link" data-demo="webapp" href="#" target="_blank" rel="noopener noreferrer">
+                  Blazor WebApp<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </td>
+              <td class="description">Server rendering with an interactive WebAssembly client.</td>
+            </tr>
+            <tr data-demo-row="server">
+              <td><img class="framework-logo" src="/images/clients/blazor.svg" alt="" width="48" height="48"></td>
+              <td>
+                <a class="framework-link" data-demo="server" href="#" target="_blank" rel="noopener noreferrer">
+                  Blazor Server<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </td>
+              <td class="description">Interactive server rendering over a WebSocket connection.</td>
+            </tr>
+            <tr data-demo-row="wasm">
+              <td><img class="framework-logo" src="/images/clients/blazor.svg" alt="" width="48" height="48"></td>
+              <td>
+                <a class="framework-link" data-demo="wasm" href="#" target="_blank" rel="noopener noreferrer">
+                  Blazor WebAssembly<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </td>
+              <td class="description">Browser-hosted UI with a same-origin API and authentication proxy.</td>
+            </tr>
+            <tr data-demo-row="angular">
+              <td><img class="framework-logo" src="/images/clients/angular.svg" alt="" width="48" height="48"></td>
+              <td>
+                <a class="framework-link" data-demo="angular" href="#" target="_blank" rel="noopener noreferrer">
+                  Angular<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </td>
+              <td class="description">Angular 22.1 UI with the local FileClerk package wired by source path.</td>
+            </tr>
+            <tr data-demo-row="mvc">
+              <td><img class="framework-logo" src="/images/clients/aspnetcore.svg" alt="" width="48" height="48"></td>
+              <td>
+                <a class="framework-link" data-demo="mvc" href="#" target="_blank" rel="noopener noreferrer">
+                  MVC<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </td>
+              <td class="description">Server-rendered Razor Pages with the local FileClerk MVC module.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -59,6 +95,15 @@
     const publicHost = window.fileClerkDemoPublicHost || window.location.hostname;
     document.querySelectorAll('[data-demo]').forEach(link => {
       link.href = `http://${publicHost}:${ports[link.dataset.demo]}`;
+    });
+    document.querySelectorAll('[data-demo-row]').forEach(row => {
+      row.addEventListener('click', event => {
+        if (event.target.closest('a')) {
+          return;
+        }
+
+        row.querySelector('[data-demo]').click();
+      });
     });
   </script>
 </body>

@@ -101,6 +101,11 @@ COPY --chown=app:app --from=dotnet-build /out/migrator /app/migrator
 COPY --chown=app:app --from=dotnet-build /out/mvc /app/mvc
 COPY --chown=app:app --from=angular-build /workspace/src/demo/angular/dist/Angular/browser /app/angular
 COPY --chown=app:app docker/landing /app/landing
+COPY --chown=app:app \
+    src/demo/shared/Starbender.FileClerk.Demo.HttpApi.Host/wwwroot/images/clients/angular.svg \
+    src/demo/shared/Starbender.FileClerk.Demo.HttpApi.Host/wwwroot/images/clients/aspnetcore.svg \
+    src/demo/shared/Starbender.FileClerk.Demo.HttpApi.Host/wwwroot/images/clients/blazor.svg \
+    /app/landing/images/clients/
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY --chmod=755 docker/entrypoint.sh docker/healthcheck.sh docker/run-host.sh /app/bin/
