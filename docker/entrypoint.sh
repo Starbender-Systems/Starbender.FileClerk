@@ -7,6 +7,7 @@ webapp_port="${BLAZOR_WEBAPP_PORT:-8081}"
 server_port="${BLAZOR_SERVER_PORT:-8082}"
 angular_port="${ANGULAR_PORT:-8084}"
 wasm_port="${BLAZOR_WASM_PORT:-8083}"
+mvc_port="${MVC_PORT:-8085}"
 angular_origin="http://${public_host}:${angular_port}"
 wasm_origin="http://${public_host}:${wasm_port}"
 
@@ -17,7 +18,7 @@ case "$public_host" in
         ;;
 esac
 
-for public_port in "$landing_port" "$webapp_port" "$server_port" "$wasm_port" "$angular_port"; do
+for public_port in "$landing_port" "$webapp_port" "$server_port" "$wasm_port" "$angular_port" "$mvc_port"; do
     case "$public_port" in
         ''|*[!0-9]*)
             echo "Demo public ports must be numeric: $public_port" >&2
@@ -33,6 +34,7 @@ sed \
     -e "s|__BLAZOR_SERVER_PORT__|${server_port}|g" \
     -e "s|__BLAZOR_WASM_PORT__|${wasm_port}|g" \
     -e "s|__ANGULAR_PORT__|${angular_port}|g" \
+    -e "s|__MVC_PORT__|${mvc_port}|g" \
     /etc/nginx/nginx.conf > /tmp/nginx/nginx.conf
 nginx -t -c /tmp/nginx/nginx.conf
 
@@ -63,7 +65,8 @@ window.fileClerkDemoPorts = {
   webapp: "${webapp_port}",
   server: "${server_port}",
   wasm: "${wasm_port}",
-  angular: "${angular_port}"
+  angular: "${angular_port}",
+  mvc: "${mvc_port}"
 };
 window.fileClerkDemoPublicHost = "${public_host}";
 EOF

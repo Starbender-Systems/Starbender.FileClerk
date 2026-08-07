@@ -1,9 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 using Volo.Abp.FeatureManagement;
@@ -20,12 +18,7 @@ namespace Starbender.FileClerk.Demo.EntityFrameworkCore;
 )]
 public class DemoEntityFrameworkCoreTestModule : AbpModule
 {
-    private SqliteConnection? _sqliteConnection;
-
-    public override void PreConfigureServices(ServiceConfigurationContext context)
-    {
-        PreConfigure<AbpSqliteOptions>(x => x.BusyTimeout = null);
-    }
+    private AbpUnitTestSqliteDatabase? _database;
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
@@ -47,36 +40,29 @@ public class DemoEntityFrameworkCoreTestModule : AbpModule
 
     private void ConfigureInMemorySqlite(IServiceCollection services)
     {
-        _sqliteConnection = CreateDatabaseAndGetConnection();
+        _database = new AbpUnitTestSqliteDatabase();
+        _database.CreateTables(
+            new DemoDbContext(
+                new DbContextOptionsBuilder<DemoDbContext>()
+                    .UseSqlite(_database.ConnectionString)
+                    .Options));
+
+        services.Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.ConnectionStrings.Default = _database.ConnectionString;
+        });
 
         services.Configure<AbpDbContextOptions>(options =>
         {
             options.Configure(context =>
             {
-                context.DbContextOptions.UseSqlite(_sqliteConnection);
+                context.UseSqlite();
             });
         });
     }
 
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
     {
-        _sqliteConnection?.Dispose();
-    }
-
-    private static SqliteConnection CreateDatabaseAndGetConnection()
-    {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-
-        var options = new DbContextOptionsBuilder<DemoDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        using (var context = new DemoDbContext(options))
-        {
-            context.GetService<IRelationalDatabaseCreator>().CreateTables();
-        }
-
-        return connection;
+        _database?.Dispose();
     }
 }

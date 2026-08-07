@@ -123,6 +123,7 @@ docker compose logs --follow app
 | <http://localhost:8082> | Blazor Server |
 | <http://localhost:8083> | Blazor WebAssembly and its same-origin API/auth proxy |
 | <http://localhost:8084> | Angular and its same-origin API/auth proxy |
+| <http://localhost:8085> | MVC/Razor Pages |
 
 Use the template-seeded administrator account:
 
@@ -135,7 +136,11 @@ Every application uses the ABP Basic Theme and the same PostgreSQL schema and
 data. The two static clients have separate OpenIddict registrations and run
 against separate instances of the shared HTTP API host so each authority stays
 same-origin. Both `Default` and `FileClerk` remote services and connection
-strings resolve to the shared backend.
+strings resolve to the shared backend. ASP.NET Data Protection keys are stored
+in a separate Docker volume so login sessions and antiforgery tokens remain
+valid when the application container is rebuilt or recreated. The MVC host
+also uses its own antiforgery cookie name because browser cookies are scoped by
+hostname rather than by the different localhost ports used by the demos.
 
 ### Configuration
 
@@ -157,13 +162,14 @@ for local manual testing.
 | `BLAZOR_SERVER_PORT` | `8082` | Blazor Server host port |
 | `BLAZOR_WASM_PORT` | `8083` | Blazor WebAssembly host port |
 | `ANGULAR_PORT` | `8084` | Angular host port |
+| `MVC_PORT` | `8085` | MVC/Razor Pages host port |
 
 If a public port is overridden, the entrypoint updates OpenIddict clients,
 Angular runtime configuration, and landing-page links before startup. For
 example:
 
 ```bash
-BLAZOR_WEBAPP_PORT=18081 ANGULAR_PORT=18084 docker compose up --build --detach --wait
+BLAZOR_WEBAPP_PORT=18081 ANGULAR_PORT=18084 MVC_PORT=18085 docker compose up --build --detach --wait
 ```
 
 The known development database password and encryption passphrase must never be
@@ -177,7 +183,8 @@ Stop without deleting data:
 docker compose down
 ```
 
-Delete the shared database volume and reseed a clean administrator account:
+Delete the shared database and Data Protection volumes, invalidate existing
+browser sessions, and reseed a clean administrator account:
 
 ```bash
 docker compose down --volumes
@@ -192,12 +199,16 @@ docker compose up --detach --wait
   administration in each UI.
 - Call `/api/file-clerk/example` through ports 8083 and 8084 and confirm the
   response contains `{"value":42}`.
+- Open `/FileClerk` and call `/api/file-clerk/example` through port 8085 to
+  confirm the MVC module page and local API are available.
 - Confirm Blazor WebApp server rendering becomes interactive and Blazor Server
   remains functional across navigation (WebSockets are proxied by Nginx).
 - Create or change a user/tenant in one UI and confirm the shared state is
-  visible from the other three.
+  visible from the other four.
 - Restart the stack and confirm the change survives; use the reset procedure
   only when a clean database is wanted.
+- While logged into MVC, open Administration > Settings > Emailing, recreate the
+  application container, and confirm the tab still loads without a 400 error.
 
 ## Repository layout
 
@@ -211,6 +222,7 @@ docker compose up --detach --wait
 | `src/demo/blazor-server/` | Blazor Server demo |
 | `src/demo/blazor-webapp/` | Blazor WebApp server and interactive client |
 | `src/demo/blazor-webassembly/` | Blazor WebAssembly client and static host |
+| `src/demo/mvc/` | MVC/Razor Pages demo |
 | `src/demo/test/` | Shared backend Domain, Application, and EF Core tests |
 | `src/Directory.Packages.props` | Centrally managed NuGet versions |
 | `GitVersion.yml` | Release-line and semantic-version increment rules |

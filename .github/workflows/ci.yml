@@ -100,11 +100,12 @@ jobs:
           BLAZOR_SERVER_PORT=18082 \
           BLAZOR_WASM_PORT=18083 \
           ANGULAR_PORT=18084 \
+          MVC_PORT=18085 \
           DEMO_PUBLIC_HOST=fileclerk.example.test \
           docker compose config --format json |
             jq --exit-status '
               .services.postgres.ports[0].published == "55432" and
-              ([.services.app.ports[].published] | sort == ["18080", "18081", "18082", "18083", "18084"]) and
+              ([.services.app.ports[].published] | sort == ["18080", "18081", "18082", "18083", "18084", "18085"]) and
               .services.postgres.environment.POSTGRES_DB == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_USER == "fileclerk_override" and
               .services.postgres.environment.POSTGRES_PASSWORD == "fileclerk_override_only" and
@@ -114,6 +115,9 @@ jobs:
               .services.app.environment.BLAZOR_SERVER_PORT == "18082" and
               .services.app.environment.BLAZOR_WASM_PORT == "18083" and
               .services.app.environment.ANGULAR_PORT == "18084" and
+              .services.app.environment.MVC_PORT == "18085" and
+              .services.app.volumes[0].target == "/home/app/.aspnet/DataProtection-Keys" and
+              .volumes.data_protection_keys != null and
               (.services.app.environment.ConnectionStrings__FileClerk |
                 contains("Database=fileclerk_override;Username=fileclerk_override;Password=fileclerk_override_only"))
             '
@@ -126,7 +130,7 @@ jobs:
 
       - name: Verify services
         run: |
-          verify_blazor_bundle() {
+          verify_theme_bundle() {
             base_url="$1"
             bundle_path="$(
               curl --fail --silent --show-error "$base_url/" |
@@ -176,6 +180,7 @@ jobs:
           )" = "1"
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/health
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet 'data-demo="mvc"'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8081/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8082/health-status >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/ >/dev/null
@@ -184,14 +189,22 @@ jobs:
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --location --silent --show-error http://localhost:8083/images/clients/blazor.svg >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/ >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/health-status >/dev/null
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/FileClerk | grep --quiet "FileClerk"
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/api/file-clerk/example | jq --exit-status '.value == 42'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/api/file-clerk/example | jq --exit-status '.value == 42'
+          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8085/.well-known/openid-configuration | jq --exit-status '.issuer == "http://localhost:8085/"'
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8084/getEnvConfig | jq --exit-status '.application.baseUrl == "http://localhost:8084"'
           test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8083/)" = "308 http://localhost:8083/"
-          verify_blazor_bundle http://localhost:8081
-          verify_blazor_bundle http://localhost:8082
+          test "$(curl --silent --output /dev/null --write-out '%{http_code} %{redirect_url}' http://127.0.0.1:8085/)" = "308 http://localhost:8085/"
+          verify_theme_bundle http://localhost:8081
+          verify_theme_bundle http://localhost:8082
           verify_account_page_assets http://localhost:8083
           verify_account_page_assets http://localhost:8084
+          verify_theme_bundle http://localhost:8085
+          verify_account_page_assets http://localhost:8085
           docker compose logs app | grep --quiet "Migrations and seed data completed; starting demo hosts."
           test "$(
             docker compose exec --no-TTY postgres sh -ec \
@@ -209,6 +222,86 @@ jobs:
             test ! -d /usr/share/dotnet/sdk
             test -z "$(find /app -type f \( -name "*.cs" -o -name "*.csproj" -o -name "package-lock.json" \) -print -quit)"
           '
+
+      - name: Verify MVC session survives application recreation
+        run: |
+          cookie_jar="$(mktemp)"
+          email_settings_response="$(mktemp)"
+          global_script_response="$(mktemp)"
+          antiforgery_headers="$(mktemp)"
+          trap 'rm --force "$cookie_jar" "$email_settings_response" "$global_script_response" "$antiforgery_headers"' EXIT
+
+          login_html="$(
+            curl --fail --silent --show-error \
+              --cookie-jar "$cookie_jar" \
+              http://localhost:8085/Account/Login
+          )"
+          login_token="$(
+            printf '%s' "$login_html" |
+              grep --only-matching 'name="__RequestVerificationToken" type="hidden" value="[^"]*"' |
+              head --lines=1 |
+              cut --delimiter='"' --fields=6
+          )"
+          test -n "$login_token"
+
+          test "$(
+            curl --silent --show-error \
+              --cookie "$cookie_jar" \
+              --cookie-jar "$cookie_jar" \
+              --data-urlencode "LoginInput.UserNameOrEmailAddress=admin" \
+              --data-urlencode "LoginInput.Password=1q2w3E*" \
+              --data-urlencode "LoginInput.RememberMe=false" \
+              --data-urlencode "__RequestVerificationToken=$login_token" \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              http://localhost:8085/Account/Login
+          )" = "302"
+
+          settings_html="$(
+            curl --fail --silent --show-error \
+              --cookie "$cookie_jar" \
+              http://localhost:8085/SettingManagement
+          )"
+          global_script_path="$(
+            printf '%s' "$settings_html" |
+              grep --only-matching '/__bundles/Basic\.Global\.[^"]*\.js[^" ]*' |
+              head --lines=1
+          )"
+          test -n "$global_script_path"
+          curl --fail --silent --show-error \
+            --output "$global_script_response" \
+            "http://localhost:8085$global_script_path"
+          grep --quiet 'XSRF-TOKEN-MVC-v1' "$global_script_response"
+
+          curl --fail --silent --show-error \
+            --cookie "$cookie_jar" \
+            --cookie "XSRF-TOKEN=stale-token-from-another-demo" \
+            --cookie-jar "$cookie_jar" \
+            --dump-header "$antiforgery_headers" \
+            --output /dev/null \
+            http://localhost:8085/Abp/ApplicationConfigurationScript
+          grep --ignore-case --quiet \
+            '^set-cookie: XSRF-TOKEN-MVC-v1=.*samesite=lax' \
+            "$antiforgery_headers"
+          request_token="$(
+            awk '$6 == "XSRF-TOKEN-MVC-v1" { print $7 }' "$cookie_jar" |
+              tail --lines=1
+          )"
+          test -n "$request_token"
+
+          docker compose up --detach --force-recreate --no-deps app
+          curl --retry 60 --retry-delay 1 --retry-all-errors \
+            --fail --silent --show-error \
+            http://localhost:8085/health-status >/dev/null
+
+          curl --fail --silent --show-error \
+            --cookie "$cookie_jar" \
+            --cookie "XSRF-TOKEN=stale-token-from-another-demo" \
+            --header "RequestVerificationToken: $request_token" \
+            --data-urlencode "id=Volo.Abp.EmailSetting" \
+            --output "$email_settings_response" \
+            http://localhost:8085/SettingManagement?handler=RenderView
+          grep --quiet 'EmailSettingsForm' "$email_settings_response"
 
       - name: Verify database persistence
         run: |

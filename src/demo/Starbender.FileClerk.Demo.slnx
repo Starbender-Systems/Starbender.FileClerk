@@ -14,6 +14,7 @@
         <Project Path="shared/Starbender.FileClerk.Demo.DbMigrator/Starbender.FileClerk.Demo.DbMigrator.csproj" />
     </Folder>
     <Folder Name="/ui/">
+        <Project Path="mvc/Starbender.FileClerk.Demo.Web/Starbender.FileClerk.Demo.Web.csproj" />
         <Project Path="blazor-server/Starbender.FileClerk.Demo.BlazorServer/Starbender.FileClerk.Demo.BlazorServer.Blazor.csproj" />
         <Project Path="blazor-webapp/Starbender.FileClerk.Demo.Blazor/Starbender.FileClerk.Demo.Blazor.csproj" />
         <Project Path="blazor-webapp/Starbender.FileClerk.Demo.Blazor.Client/Starbender.FileClerk.Demo.Blazor.Client.csproj" />
