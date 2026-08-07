@@ -174,13 +174,43 @@ jobs:
             )
           }
 
+          verify_landing_page() {
+            base_url="$1"
+            landing_html="$(curl --fail --silent --show-error "$base_url/")"
+            demo_config="$(curl --fail --silent --show-error "$base_url/demo-config.js")"
+
+            printf '%s' "$landing_html" | grep --quiet '<table class="demo-table"'
+            printf '%s' "$landing_html" |
+              grep --quiet 'href="https://github.com/Starbender-Systems/Starbender.FileClerk"'
+            for demo in webapp server wasm angular mvc; do
+              printf '%s' "$landing_html" | grep --quiet "data-demo-row=\"$demo\""
+              printf '%s' "$landing_html" | grep --quiet "data-demo=\"$demo\""
+            done
+            test "$(printf '%s' "$landing_html" | grep --only-matching 'target="_blank"' | wc --lines)" -eq 5
+
+            printf '%s' "$demo_config" | grep --quiet 'webapp: "8081"'
+            printf '%s' "$demo_config" | grep --quiet 'server: "8082"'
+            printf '%s' "$demo_config" | grep --quiet 'wasm: "8083"'
+            printf '%s' "$demo_config" | grep --quiet 'angular: "8084"'
+            printf '%s' "$demo_config" | grep --quiet 'mvc: "8085"'
+            printf '%s' "$demo_config" | grep --quiet 'window.fileClerkDemoPublicHost = "localhost"'
+
+            for logo in angular aspnetcore blazor; do
+              test "$(
+                curl --fail --silent --show-error \
+                  --output /dev/null --write-out '%{content_type}' \
+                  "$base_url/images/clients/$logo.svg"
+              )" = "image/svg+xml"
+            done
+          }
+
           test "$(
             docker compose exec --no-TTY postgres sh -ec \
               'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "SELECT 1"'
           )" = "1"
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/health
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet "FileClerk demos"
-          curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8080/ | grep --quiet 'data-demo="mvc"'
+          verify_landing_page http://localhost:8080
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8081/ >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8082/health-status >/dev/null
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail --silent --show-error http://localhost:8083/ >/dev/null
