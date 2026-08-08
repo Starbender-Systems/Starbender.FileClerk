@@ -26,6 +26,7 @@
         <Project Path="test/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests/Starbender.FileClerk.Demo.EntityFrameworkCore.Tests.csproj" />
         <Project Path="test/Starbender.FileClerk.Demo.TestBase/Starbender.FileClerk.Demo.TestBase.csproj" />
         <Project Path="test/Starbender.FileClerk.Demo.Domain.Tests/Starbender.FileClerk.Demo.Domain.Tests.csproj" />
+        <Project Path="test/Starbender.FileClerk.Demo.HttpApi.Tests/Starbender.FileClerk.Demo.HttpApi.Tests.csproj" />
         <Project Path="test/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp/Starbender.FileClerk.Demo.HttpApi.Client.ConsoleTestApp.csproj" />
     </Folder>
 </Solution>

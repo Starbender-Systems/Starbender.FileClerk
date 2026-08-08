@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Starbender.FileClerk.Demo.Security;
 using Volo.Abp;
 using Volo.Abp.Modularity;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.Uow;
 using Volo.Abp.Testing;
 
@@ -12,6 +14,12 @@ namespace Starbender.FileClerk.Demo;
 public abstract class DemoTestBase<TStartupModule> : AbpIntegratedTest<TStartupModule>
     where TStartupModule : IAbpModule
 {
+    protected ICurrentPrincipalAccessor CurrentPrincipalAccessor =>
+        GetRequiredService<ICurrentPrincipalAccessor>();
+
+    protected TestPrincipalFactory TestPrincipalFactory =>
+        GetRequiredService<TestPrincipalFactory>();
+
     protected override void SetAbpApplicationCreationOptions(AbpApplicationCreationOptions options)
     {
         options.UseAutofac();
@@ -64,4 +72,48 @@ public abstract class DemoTestBase<TStartupModule> : AbpIntegratedTest<TStartupM
             }
         }
     }
+
+    protected virtual async Task RunAsAsync(
+        AccessScenario scenario,
+        string requiredPermission,
+        Func<Task> action)
+    {
+        var principal = await TestPrincipalFactory.CreateAsync(scenario, requiredPermission);
+        using (CurrentPrincipalAccessor.Change(principal))
+        {
+            await action();
+        }
+    }
+
+    protected virtual async Task<TResult> RunAsAsync<TResult>(
+        AccessScenario scenario,
+        string requiredPermission,
+        Func<Task<TResult>> action)
+    {
+        var principal = await TestPrincipalFactory.CreateAsync(scenario, requiredPermission);
+        using (CurrentPrincipalAccessor.Change(principal))
+        {
+            return await action();
+        }
+    }
+
+    protected virtual async Task RunWithAllPermissionsAsync(Func<Task> action)
+    {
+        var principal = await TestPrincipalFactory.CreateWithAllPermissionsAsync();
+        using (CurrentPrincipalAccessor.Change(principal))
+        {
+            await action();
+        }
+    }
+
+    protected virtual async Task<TResult> RunWithAllPermissionsAsync<TResult>(
+        Func<Task<TResult>> action)
+    {
+        var principal = await TestPrincipalFactory.CreateWithAllPermissionsAsync();
+        using (CurrentPrincipalAccessor.Change(principal))
+        {
+            return await action();
+        }
+    }
+
 }

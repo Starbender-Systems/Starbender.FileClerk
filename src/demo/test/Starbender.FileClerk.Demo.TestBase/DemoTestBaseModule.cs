@@ -23,8 +23,6 @@ public class DemoTestBaseModule : AbpModule
         {
             options.IsJobExecutionEnabled = false;
         });
-
-        context.Services.AddAlwaysAllowAuthorization();
     }
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
