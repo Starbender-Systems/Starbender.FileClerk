@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using System.Threading.Tasks;
+using Starbender.FileClerk.Demo.Security;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
 using Xunit;
@@ -25,7 +26,10 @@ public abstract class SampleAppServiceTests<TStartupModule> : DemoApplicationTes
     public async Task Initial_Data_Should_Contain_Admin_User()
     {
         //Act
-        var result = await _userAppService.GetListAsync(new GetIdentityUsersInput());
+        var result = await RunAsAsync(
+            AccessScenario.AuthenticatedWithPermission,
+            IdentityPermissions.Users.Default,
+            () => _userAppService.GetListAsync(new GetIdentityUsersInput()));
 
         //Assert
         result.TotalCount.ShouldBeGreaterThan(0);
