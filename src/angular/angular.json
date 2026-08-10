@@ -31,7 +31,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/file-clerk/tsconfig.spec.json",
-            "buildTarget": "projects/file-clerk:build",
+            "buildTarget": "file-clerk:build",
             "runner": "vitest"
           }
         },
