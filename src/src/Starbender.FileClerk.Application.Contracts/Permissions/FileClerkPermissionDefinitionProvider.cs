@@ -1,14 +1,20 @@
-﻿using Starbender.FileClerk.Localization;
+using Starbender.FileClerk.Localization;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Localization;
 
 namespace Starbender.FileClerk.Permissions;
 
-public class FileClerkPermissionDefinitionProvider : PermissionDefinitionProvider
+public sealed class FileClerkPermissionDefinitionProvider : PermissionDefinitionProvider
 {
     public override void Define(IPermissionDefinitionContext context)
     {
-        var myGroup = context.AddGroup(FileClerkPermissions.GroupName, L("Permission:FileClerk"));
+        var group = context.AddGroup(
+            FileClerkPermissions.GroupName,
+            L("FileClerk:PermissionGroup"));
+
+        group.AddPermission(
+            FileClerkPermissions.ManageFileClerk,
+            L("FileClerk:ManageFileClerkPermission"));
     }
 
     private static LocalizableString L(string name)

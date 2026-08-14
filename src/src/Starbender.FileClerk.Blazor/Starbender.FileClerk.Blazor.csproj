@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Mapperly" />
     <PackageReference Include="Volo.Abp.AspNetCore.Components.Web.Theming" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Blazor" />
   </ItemGroup>
 
   <ItemGroup>

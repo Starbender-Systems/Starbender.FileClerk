@@ -1,0 +1,108 @@
+@using Microsoft.Extensions.Localization
+@using Starbender.FileClerk.Localization
+@model Starbender.FileClerk.Web.Components.FileClerkSetting.FileClerkSettingViewModel
+@inject IStringLocalizer<FileClerkResource> L
+
+<div id="file-clerk-settings" class="py-2">
+    <div class="form-check mb-3">
+        <input id="file-clerk-enabled"
+               class="form-check-input"
+               type="checkbox"
+               checked="@Model.Configuration.EffectiveEnabled" />
+        <label class="form-check-label" for="file-clerk-enabled">
+            @L["FileClerk:Enabled"]
+        </label>
+        <div class="form-text">@L["FileClerk:FileClerkEnabledDescription"]</div>
+    </div>
+
+    <fieldset class="mb-3">
+        <legend class="h6">@L["FileClerk:Providers"]</legend>
+        <div class="form-text mb-2">@L["FileClerk:FileClerkProvidersDescription"]</div>
+        @foreach (var provider in Model.Configuration.AvailableProviders)
+        {
+            var inputId = $"file-clerk-provider-{provider.Id}";
+            <div class="form-check">
+                <input id="@inputId"
+                       class="form-check-input file-clerk-provider-choice"
+                       type="checkbox"
+                       value="@provider.Id"
+                       checked="@Model.Configuration.SelectedProviderIds.Contains(provider.Id)" />
+                <label class="form-check-label" for="@inputId">@provider.Name</label>
+            </div>
+        }
+    </fieldset>
+
+    <button id="file-clerk-save" type="button" class="btn btn-primary">
+        <i class="fa fa-save me-1"></i>@L["FileClerk:Save"]
+    </button>
+
+    @if (Model.Configuration.CanManageProviderRegistry)
+    {
+        <hr />
+        <h5>@L["FileClerk:ProviderRegistry"]</h5>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th>@L["FileClerk:Providers"]</th>
+                    <th>@L["FileClerk:ImplementationType"]</th>
+                    <th>@L["FileClerk:Enabled"]</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var provider in Model.Registry)
+                {
+                    <tr>
+                        <td>@provider.Name</td>
+                        <td><code>@provider.ImplementationType</code></td>
+                        <td>
+                            <input class="form-check-input file-clerk-registry-toggle"
+                                   type="checkbox"
+                                   data-provider-id="@provider.Id"
+                                   checked="@provider.Enabled" />
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<script>
+(function () {
+    const root = document.getElementById('file-clerk-settings');
+    if (!root) return;
+
+    root.querySelector('#file-clerk-save').addEventListener('click', function () {
+        const providerIds = Array.from(root.querySelectorAll('.file-clerk-provider-choice:checked'))
+            .map(input => Number(input.value));
+
+        abp.ajax({
+            url: abp.appPath + 'api/file-clerk/configuration',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                enabled: root.querySelector('#file-clerk-enabled').checked,
+                providerIds
+            })
+        }).done(function () {
+            abp.notify.success('@L["FileClerk:Saved"]');
+        });
+    });
+
+    root.querySelectorAll('.file-clerk-registry-toggle').forEach(function (input) {
+        input.addEventListener('change', function () {
+            abp.ajax({
+                url: abp.appPath + 'api/file-clerk/blob-providers/' +
+                    input.dataset.providerId + '/enabled',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({ enabled: input.checked })
+            }).fail(function () {
+                input.checked = !input.checked;
+            });
+        });
+    });
+})();
+</script>

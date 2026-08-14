@@ -1,33 +1,40 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Starbender.FileClerk.BlobProviders;
 using Volo.Abp;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 
 namespace Starbender.FileClerk.EntityFrameworkCore;
 
 public static class FileClerkDbContextModelCreatingExtensions
 {
-    public static void ConfigureFileClerk(
-        this ModelBuilder builder)
+    public static void ConfigureFileClerk(this ModelBuilder builder)
     {
         Check.NotNull(builder, nameof(builder));
 
-        /* Configure all entities here. Example:
-
-        builder.Entity<Question>(b =>
+        builder.Entity<FileClerkBlobProvider>(entity =>
         {
-            //Configure table & schema name
-            b.ToTable(FileClerkDbProperties.DbTablePrefix + "Questions", FileClerkDbProperties.DbSchema);
+            entity.ToTable(
+                FileClerkDbProperties.DbTablePrefix + "BlobProviders",
+                FileClerkDbProperties.DbSchema);
 
-            b.ConfigureByConvention();
+            entity.ConfigureByConvention();
 
-            //Properties
-            b.Property(q => q.Title).IsRequired().HasMaxLength(QuestionConsts.MaxTitleLength);
+            entity.Property(provider => provider.Id).ValueGeneratedOnAdd();
+            entity.Property(provider => provider.Name)
+                .IsRequired()
+                .HasMaxLength(FileClerkBlobProviderConsts.MaxNameLength);
+            entity.Property(provider => provider.ImplementationType)
+                .IsRequired()
+                .HasMaxLength(FileClerkBlobProviderConsts.MaxImplementationTypeLength);
+            entity.Property(provider => provider.ConfigurationSchema)
+                .IsRequired()
+                .HasMaxLength(FileClerkBlobProviderConsts.MaxConfigurationSchemaLength);
+            entity.Property(provider => provider.Enabled)
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            //Relations
-            b.HasMany(question => question.Tags).WithOne().HasForeignKey(qt => qt.QuestionId);
-
-            //Indexes
-            b.HasIndex(q => q.CreationTime);
+            entity.HasIndex(provider => provider.Name).IsUnique();
+            entity.HasIndex(provider => provider.ImplementationType).IsUnique();
         });
-        */
     }
 }

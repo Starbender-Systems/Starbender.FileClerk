@@ -6,6 +6,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { eFileClerkRouteNames } from '../enums/route-names';
+import { FILE_CLERK_SETTING_TAB_PROVIDERS } from './setting-tab.provider';
 
 export const FILE_CLERK_ROUTE_PROVIDERS = [
   provideAppInitializer(() => {
@@ -26,7 +27,10 @@ export function configureRoutes() {
   ]);
 }
 
-const FILE_CLERK_PROVIDERS: EnvironmentProviders[] = [...FILE_CLERK_ROUTE_PROVIDERS];
+const FILE_CLERK_PROVIDERS: EnvironmentProviders[] = [
+  ...FILE_CLERK_ROUTE_PROVIDERS,
+  ...FILE_CLERK_SETTING_TAB_PROVIDERS,
+];
 
 export function provideFileClerk() {
   return makeEnvironmentProviders(FILE_CLERK_PROVIDERS);

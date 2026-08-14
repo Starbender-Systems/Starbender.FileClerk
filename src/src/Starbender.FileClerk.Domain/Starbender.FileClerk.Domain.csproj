@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Ddd.Domain" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Domain" />
+    <PackageReference Include="Volo.Abp.Identity.Domain" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Domain" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain.Shared\Starbender.FileClerk.Domain.Shared.csproj" />
   </ItemGroup>
 

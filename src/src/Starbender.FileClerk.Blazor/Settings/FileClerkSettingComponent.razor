@@ -1,0 +1,135 @@
+@using Microsoft.AspNetCore.Components
+@using Starbender.FileClerk.BlobProviders
+@using Starbender.FileClerk.Configuration
+@inherits FileClerkComponentBase
+@inject IFileClerkConfigurationAppService ConfigurationService
+@inject IFileClerkBlobProviderAppService ProviderService
+
+@if (_configuration is null)
+{
+    <p>@L["FileClerk:Loading"]</p>
+}
+else
+{
+    <div class="py-2">
+        <div class="form-check mb-3">
+            <input id="file-clerk-enabled-blazor"
+                   class="form-check-input"
+                   type="checkbox"
+                   @bind="_enabled" />
+            <label class="form-check-label" for="file-clerk-enabled-blazor">
+                @L["FileClerk:Enabled"]
+            </label>
+            <div class="form-text">@L["FileClerk:FileClerkEnabledDescription"]</div>
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="h6">@L["FileClerk:Providers"]</legend>
+            <div class="form-text mb-2">@L["FileClerk:FileClerkProvidersDescription"]</div>
+            @foreach (var provider in _configuration.AvailableProviders)
+            {
+                var inputId = $"file-clerk-provider-blazor-{provider.Id}";
+                <div class="form-check">
+                    <input id="@inputId"
+                           class="form-check-input"
+                           type="checkbox"
+                           checked="@_selectedProviderIds.Contains(provider.Id)"
+                           @onchange="args => SetSelected(provider.Id, args)" />
+                    <label class="form-check-label" for="@inputId">@provider.Name</label>
+                </div>
+            }
+        </fieldset>
+
+        <button type="button" class="btn btn-primary" @onclick="SaveAsync">
+            <i class="fa fa-save me-1"></i>@L["FileClerk:Save"]
+        </button>
+
+        @if (_configuration.CanManageProviderRegistry)
+        {
+            <hr />
+            <h5>@L["FileClerk:ProviderRegistry"]</h5>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                    <tr>
+                        <th>@L["FileClerk:Providers"]</th>
+                        <th>@L["FileClerk:ImplementationType"]</th>
+                        <th>@L["FileClerk:Enabled"]</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var provider in _registry)
+                    {
+                        <tr>
+                            <td>@provider.Name</td>
+                            <td><code>@provider.ImplementationType</code></td>
+                            <td>
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       checked="@provider.Enabled"
+                                       @onchange="args => SetRegistryEnabledAsync(provider, args)" />
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private FileClerkConfigurationDto? _configuration;
+    private IReadOnlyList<FileClerkBlobProviderDto> _registry = [];
+    private HashSet<int> _selectedProviderIds = [];
+    private bool _enabled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _configuration = await ConfigurationService.GetAsync();
+        _enabled = _configuration.EffectiveEnabled;
+        _selectedProviderIds = _configuration.SelectedProviderIds.ToHashSet();
+        _registry = _configuration.CanManageProviderRegistry
+            ? await ProviderService.GetListAsync()
+            : [];
+    }
+
+    private void SetSelected(int id, ChangeEventArgs args)
+    {
+        if (args.Value is true)
+        {
+            _selectedProviderIds.Add(id);
+        }
+        else
+        {
+            _selectedProviderIds.Remove(id);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _configuration = await ConfigurationService.UpdateAsync(
+            new UpdateFileClerkConfigurationDto
+            {
+                Enabled = _enabled,
+                ProviderIds = _selectedProviderIds.Order().ToArray()
+            });
+        _selectedProviderIds = _configuration.SelectedProviderIds.ToHashSet();
+    }
+
+    private async Task SetRegistryEnabledAsync(
+        FileClerkBlobProviderDto provider,
+        ChangeEventArgs args)
+    {
+        provider.Enabled = args.Value is true;
+        await ProviderService.SetEnabledAsync(
+            provider.Id,
+            new SetFileClerkBlobProviderEnabledDto { Enabled = provider.Enabled });
+        await LoadAsync();
+    }
+}

@@ -50,6 +50,8 @@ public class DemoEntityFrameworkCoreTestModule : AbpModule
         services.Configure<AbpDbConnectionOptions>(options =>
         {
             options.ConnectionStrings.Default = _database.ConnectionString;
+            options.ConnectionStrings[FileClerkDbProperties.ConnectionStringName] =
+                _database.ConnectionString;
         });
 
         services.Configure<AbpDbContextOptions>(options =>

@@ -27,7 +27,7 @@ public class FileClerkPermissionAndLocalization_Tests :
 
         group.ShouldNotBeNull();
         var displayName = group.DisplayName.ShouldBeOfType<LocalizableString>();
-        displayName.Name.ShouldBe("Permission:FileClerk");
+        displayName.Name.ShouldBe("FileClerk:PermissionGroup");
 
         var localizer = GetRequiredService<IStringLocalizer<FileClerkResource>>();
         var localizedName = localizer[displayName.Name];

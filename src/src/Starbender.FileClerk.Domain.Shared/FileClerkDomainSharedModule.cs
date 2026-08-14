@@ -1,8 +1,9 @@
-﻿using Volo.Abp.Modularity;
-using Volo.Abp.Localization;
 using Starbender.FileClerk.Localization;
 using Volo.Abp.Domain;
+using Volo.Abp.Features;
+using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
+using Volo.Abp.Modularity;
 using Volo.Abp.Validation;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
@@ -11,7 +12,8 @@ namespace Starbender.FileClerk;
 
 [DependsOn(
     typeof(AbpValidationModule),
-    typeof(AbpDddDomainSharedModule)
+    typeof(AbpDddDomainSharedModule),
+    typeof(AbpFeaturesModule)
 )]
 public class FileClerkDomainSharedModule : AbpModule
 {

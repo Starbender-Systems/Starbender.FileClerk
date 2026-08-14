@@ -3,6 +3,7 @@ using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
 using Volo.Abp.Application;
 using Volo.Abp.BlobStoring;
+using Volo.Abp.FeatureManagement;
 
 namespace Starbender.FileClerk;
 
@@ -10,6 +11,7 @@ namespace Starbender.FileClerk;
     typeof(FileClerkDomainModule),
     typeof(FileClerkApplicationContractsModule),
     typeof(AbpDddApplicationModule),
+    typeof(AbpFeatureManagementApplicationModule),
     typeof(AbpMapperlyModule)
     )]
 [DependsOn(typeof(AbpBlobStoringModule))]

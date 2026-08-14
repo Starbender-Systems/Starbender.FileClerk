@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.BlobStoring" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" />
     <PackageReference Include="Volo.Abp.Mapperly" />
     <PackageReference Include="Volo.Abp.Ddd.Application" />
     <ProjectReference Include="..\Starbender.FileClerk.Application.Contracts\Starbender.FileClerk.Application.Contracts.csproj" />

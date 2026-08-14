@@ -3,21 +3,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Starbender.FileClerk.Localization;
 using Starbender.FileClerk.Web.Menus;
+using Starbender.FileClerk.Web.Settings;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
+using Volo.Abp.SettingManagement.Web;
+using Volo.Abp.SettingManagement.Web.Pages.SettingManagement;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
-using Starbender.FileClerk.Permissions;
 
 namespace Starbender.FileClerk.Web;
 
 [DependsOn(
     typeof(FileClerkApplicationContractsModule),
     typeof(AbpAspNetCoreMvcUiThemeSharedModule),
+    typeof(AbpSettingManagementWebModule),
     typeof(AbpMapperlyModule)
-    )]
+)]
 public class FileClerkWebModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -42,6 +45,11 @@ public class FileClerkWebModule : AbpModule
             options.MenuContributors.Add(new FileClerkMenuContributor());
         });
 
+        Configure<SettingManagementPageOptions>(options =>
+        {
+            options.Contributors.Add(new FileClerkSettingPageContributor());
+        });
+
         Configure<AbpVirtualFileSystemOptions>(options =>
         {
             options.FileSets.AddEmbedded<FileClerkWebModule>();
@@ -49,10 +57,7 @@ public class FileClerkWebModule : AbpModule
 
         context.Services.AddMapperlyObjectMapper<FileClerkWebModule>();
 
-        Configure<RazorPagesOptions>(options =>
-        {
-            //Configure authorization.
-        });
+        Configure<RazorPagesOptions>(_ => { });
 
         if (hostingEnvironment.IsDevelopment())
         {

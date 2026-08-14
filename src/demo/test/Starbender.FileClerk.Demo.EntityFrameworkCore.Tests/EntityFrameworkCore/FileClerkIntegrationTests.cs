@@ -20,13 +20,13 @@ public class FileClerkIntegrationTests : DemoEntityFrameworkCoreTestBase
     }
 
     [Fact]
-    public void FileClerk_DbContext_Should_Be_Replaced_By_Demo_DbContext()
+    public void FileClerk_DbContext_Should_Remain_Dedicated()
     {
         using var scope = ServiceProvider.CreateScope();
 
         var dbContext = scope.ServiceProvider
             .GetRequiredService<global::Starbender.FileClerk.EntityFrameworkCore.IFileClerkDbContext>();
 
-        dbContext.ShouldBeOfType<DemoDbContext>();
+        dbContext.ShouldBeOfType<global::Starbender.FileClerk.EntityFrameworkCore.FileClerkDbContext>();
     }
 }
