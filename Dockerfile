@@ -57,7 +57,7 @@ RUN dotnet dev-certs https \
 FROM node-base AS angular-build
 
 WORKDIR /workspace/src/angular
-COPY src/angular/package.json src/angular/package-lock.json ./
+COPY src/angular/package.json src/angular/package-lock.json src/angular/.npmrc ./
 RUN npm ci
 COPY src/angular ./
 RUN npm run lint && npm run build
