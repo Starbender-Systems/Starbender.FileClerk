@@ -6,7 +6,6 @@ using Volo.Abp.Auditing;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace Starbender.FileClerk.BlobProviders;
-
 public class FileClerkBlobProvider :
     AuditedAggregateRoot<int>
 {

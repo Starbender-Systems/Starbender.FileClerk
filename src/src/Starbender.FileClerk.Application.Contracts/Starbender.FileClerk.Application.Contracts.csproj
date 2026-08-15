@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Volo.Abp.BlobStoring" />
     <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" />
     <PackageReference Include="Volo.Abp.Authorization" />
     <ProjectReference Include="..\Starbender.FileClerk.Domain.Shared\Starbender.FileClerk.Domain.Shared.csproj" />
