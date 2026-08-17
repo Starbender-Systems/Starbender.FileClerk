@@ -69,7 +69,7 @@ COPY src/demo/angular ./
 RUN npm run lint && npm run build:prod
 
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.10-noble AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.11-noble AS runtime
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends curl nginx supervisor \
