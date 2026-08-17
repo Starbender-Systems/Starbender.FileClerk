@@ -1,7 +1,7 @@
 FROM node:26.7.0-bookworm-slim AS node-base
 
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0.302-noble AS dotnet-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble AS dotnet-build
 
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1 \
