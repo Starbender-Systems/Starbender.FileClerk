@@ -1,4 +1,4 @@
-FROM node:26.7.0-bookworm-slim AS node-base
+FROM node:26.8.1-bookworm-slim AS node-base
 
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.302-noble AS dotnet-build
