@@ -51,6 +51,6 @@
     "ng-packagr": "~22.1.0",
     "typescript-eslint": "^8.65.0",
     "typescript": "~6.0.0",
-    "vitest": "^4.0.0"
+    "vitest": "^4.1.11"
   }
 }
